@@ -36,7 +36,7 @@ func main() {
 	addr := ":" + envOrDefault("PORT", "8080")
 	server := &http.Server{
 		Addr:    addr,
-		Handler: mux,
+		Handler: withCORS(mux),
 	}
 
 	log.Printf("hotel-api listening on %s", addr)
@@ -50,4 +50,17 @@ func envOrDefault(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }

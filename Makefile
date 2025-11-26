@@ -2,6 +2,8 @@ COMPOSE ?= docker compose
 API_IMAGE ?= stayflex/hotel-api:local
 E2E_IMAGE ?= stayflex/e2e:local
 BASE_URL ?= http://host.docker.internal:3000
+GUEST_WEB_IMAGE ?= stayflex/guest-web:local
+ADMIN_WEB_IMAGE ?= stayflex/admin-web:local
 
 .PHONY: build-api run-api seed-api build-e2e e2e compose-up compose-e2e
 
@@ -21,7 +23,7 @@ e2e: build-e2e
 	@docker run --rm -e BASE_URL=$(BASE_URL) --network host $(E2E_IMAGE)
 
 compose-up:
-	$(COMPOSE) up --build hotel-api
+	$(COMPOSE) up --build hotel-api guest-web admin-web web
 
 compose-e2e:
 	BASE_URL=$(BASE_URL) $(COMPOSE) run --rm e2e

@@ -1,20 +1,11 @@
 // pages/index.js
 export default function Home() {
-    return (
-        <main style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: "100vh",
-            background: "linear-gradient(135deg, #f5f7fa, #c3cfe2)"
-        }}>
-            <h1 style={{ fontFamily: "'Inter', sans-serif", fontSize: "2.5rem", color: "#333" }}>
-                Admin Web Home
-            </h1>
-            <p style={{ fontFamily: "'Inter', sans-serif", color: "#555" }}>
-                Welcome to the StayFlex admin portal.
-            </p>
-        </main>
-    );
+  return (
+    <main className="page">
+      <section className="card">
+        <h1 className="title">Admin Web Home</h1>
+        <p>Welcome to the StayFlex admin portal.</p>
+      </section>
+    </main>
+  );
 }

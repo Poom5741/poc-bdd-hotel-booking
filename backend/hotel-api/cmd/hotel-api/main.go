@@ -8,6 +8,8 @@ import (
 
 	authhttp "github.com/yourorg/hotel-api/internal/auth/adapters/http"
 	authapp "github.com/yourorg/hotel-api/internal/auth/app"
+	bookinghttp "github.com/yourorg/hotel-api/internal/booking/adapters/http"
+	bookingapp "github.com/yourorg/hotel-api/internal/booking/app"
 	roomhttp "github.com/yourorg/hotel-api/internal/room/adapters/http"
 	roomapp "github.com/yourorg/hotel-api/internal/room/app"
 	"github.com/yourorg/hotel-api/internal/seed"
@@ -32,10 +34,13 @@ func main() {
 
 	authSvc := authapp.NewService(store, authapp.PlainPasswordChecker{}, authapp.NewStaticTokenIssuer("hotel-api"))
 	roomSearchSvc := roomapp.NewSearchService(store, store)
+	bookingSvc := bookingapp.NewService(store, store)
 
 	mux := http.NewServeMux()
 	mux.Handle("/api/auth/login", authhttp.NewLoginHandler(authSvc))
 	mux.Handle("/api/guest/rooms/search", roomhttp.NewSearchHandler(roomSearchSvc))
+	mux.Handle("/api/guest/bookings", bookinghttp.NewHandler(bookingSvc))
+	mux.Handle("/api/guest/bookings/", bookinghttp.NewHandler(bookingSvc))
 
 	addr := ":" + envOrDefault("PORT", "8080")
 	server := &http.Server{

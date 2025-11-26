@@ -71,8 +71,8 @@ func (s *Seeder) Seed(ctx context.Context) error {
 	}
 
 	rooms := []roomdomain.Room{
-		{ID: "room-101", Name: "Standard 101", Type: "Standard", Capacity: 2, BasePrice: 120, Status: "available"},
-		{ID: "room-201", Name: "Deluxe 201", Type: "Deluxe", Capacity: 3, BasePrice: 180, Status: "available"},
+		{ID: "room-101", Name: "Standard 101", Type: "Standard", Capacity: 2, BasePrice: 100, Status: "available"},
+		{ID: "room-201", Name: "Deluxe Suite", Type: "Deluxe", Capacity: 3, BasePrice: 180, Status: "available"},
 		{ID: "room-301", Name: "Suite 301", Type: "Suite", Capacity: 4, BasePrice: 250, Status: "available"},
 	}
 
@@ -94,6 +94,24 @@ func (s *Seeder) Seed(ctx context.Context) error {
 			CheckOut:  time.Date(2025, 12, 12, 11, 0, 0, 0, time.UTC),
 			Status:    "confirmed",
 			CreatedAt: now,
+		},
+		{
+			ID:        "booking-4",
+			UserID:    "user-guest-1",
+			RoomID:    "room-201",
+			CheckIn:   time.Date(2025, 12, 1, 15, 0, 0, 0, time.UTC),
+			CheckOut:  time.Date(2025, 12, 5, 11, 0, 0, 0, time.UTC),
+			Status:    "confirmed",
+			CreatedAt: now,
+		},
+		{
+			ID:        "booking-3",
+			UserID:    "user-guest-1",
+			RoomID:    "room-301",
+			CheckIn:   time.Date(2024, 11, 1, 15, 0, 0, 0, time.UTC),
+			CheckOut:  time.Date(2024, 11, 3, 11, 0, 0, 0, time.UTC),
+			Status:    "past",
+			CreatedAt: now.Add(-time.Hour * 24 * 30),
 		},
 	}
 

@@ -124,4 +124,41 @@ body {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
   background: #fff;
   min-height: 120px;
+  cursor: pointer;
+}
+
+.booking-panel {
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.booking-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.booking-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.booking-item.past {
+  opacity: 0.8;
+}
+
+.cancel-button {
+  padding: 8px 12px;
+  border: 1px solid #ef4444;
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: 6px;
+  cursor: pointer;
 }

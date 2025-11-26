@@ -113,6 +113,19 @@ func (s *InMemoryStore) Create(ctx context.Context, booking bookingdomain.Bookin
 	return s.SaveBooking(ctx, booking)
 }
 
+func (s *InMemoryStore) Update(ctx context.Context, booking bookingdomain.Booking) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+	if booking.ID == "" {
+		return errors.New("booking id required")
+	}
+	s.bookings[booking.ID] = booking
+	return nil
+}
+
 func (s *InMemoryStore) FindByUser(ctx context.Context, userID string) ([]bookingdomain.Booking, error) {
 	select {
 	case <-ctx.Done():
@@ -141,4 +154,18 @@ func (s *InMemoryStore) List(ctx context.Context) ([]bookingdomain.Booking, erro
 		bookings = append(bookings, b)
 	}
 	return bookings, nil
+}
+
+func (s *InMemoryStore) FindByID(ctx context.Context, id string) (*bookingdomain.Booking, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
+	if b, ok := s.bookings[id]; ok {
+		booking := b
+		return &booking, nil
+	}
+	return nil, nil
 }

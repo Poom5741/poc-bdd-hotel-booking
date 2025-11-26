@@ -1,5 +1,3 @@
-const { expect } = require('@playwright/test');
-
 class MyBookingsPage {
   constructor(page) {
     this.page = page;
@@ -12,6 +10,40 @@ class MyBookingsPage {
 
   async getBookingList() {
     return await this.bookingList.all();
+  }
+
+  async waitForBookingList() {
+    await this.bookingList.first().waitFor({ state: 'visible' });
+  }
+
+  async getBookingsMeta() {
+    return await this.bookingList.evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const dataset = node.dataset || {};
+        const status =
+          dataset.status ||
+          (node.classList.contains('past') ? 'past' : '') ||
+          (node.classList.contains('future') ? 'future' : '') ||
+          '';
+
+        return {
+          id: dataset.id || node.getAttribute('data-id') || '',
+          status,
+          checkIn:
+            dataset.checkin ||
+            dataset.checkIn ||
+            node.getAttribute('data-checkin') ||
+            node.getAttribute('data-check-in') ||
+            '',
+        };
+      }),
+    );
+  }
+
+  async findBookingIdByDate(checkIn) {
+    const bookings = await this.getBookingsMeta();
+    const match = bookings.find((booking) => booking.checkIn?.startsWith(checkIn));
+    return match?.id;
   }
 
   async cancelBookingById(id) {

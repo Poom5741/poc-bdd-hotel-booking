@@ -1,50 +1,111 @@
-const { Given, When, Then } = require('@cucumber/cucumber');
+const { createBdd } = require('playwright-bdd');
 const { expect } = require('@playwright/test');
 const BookingOverviewPage = require('../../pages/admin/BookingOverviewPage');
 
-Given('I am on the admin bookings overview page', async function () {
-  this.bookingOverviewPage = new BookingOverviewPage(this.page);
-  await this.bookingOverviewPage.goto();
+const { Before, Given, When, Then } = createBdd();
+
+let scenarioState = {};
+
+Before(() => {
+  scenarioState = {};
 });
 
-When('I filter bookings from {string} to {string}', async function (from, to) {
-  await this.bookingOverviewPage.filterBookings(from, to);
+Given('I am on the admin bookings overview page', async ({ page }) => {
+  const bookingOverviewPage = new BookingOverviewPage(page);
+  await bookingOverviewPage.goto();
+  await bookingOverviewPage.waitForBookingList();
 });
 
-Then('I should see a list of bookings whose dates fall within that range', async function () {
-  const bookings = await this.bookingOverviewPage.getBookingList();
+When('I filter bookings from {string} to {string}', async ({ page }, from, to) => {
+  const bookingOverviewPage = new BookingOverviewPage(page);
+  await bookingOverviewPage.filterBookings(from, to);
+  scenarioState.range = { from, to };
+});
+
+Then('I should see a list of bookings whose dates fall within that range', async ({ page }) => {
+  const bookingOverviewPage = new BookingOverviewPage(page);
+  const bookings = await bookingOverviewPage.getBookingsMeta();
   expect(bookings.length).toBeGreaterThan(0);
+
+  const { from, to } = scenarioState.range || {};
+  const fromDate = new Date(from);
+  const toDate = new Date(to);
+
+  bookings.forEach((booking) => {
+    if (!booking.checkIn || !booking.checkOut) return;
+    const checkInDate = new Date(booking.checkIn);
+    const checkOutDate = new Date(booking.checkOut);
+    expect(checkInDate >= fromDate && checkOutDate <= toDate).toBeTruthy();
+  });
 });
 
-Then('the list should not contain bookings outside the range', async function () {
-  // Placeholder
+Then('the list should not contain bookings outside the range', async ({ page }) => {
+  const bookingOverviewPage = new BookingOverviewPage(page);
+  const bookings = await bookingOverviewPage.getBookingsMeta();
+  const { from, to } = scenarioState.range || {};
+  const fromDate = new Date(from);
+  const toDate = new Date(to);
+
+  bookings.forEach((booking) => {
+    if (!booking.checkIn || !booking.checkOut) return;
+    const checkInDate = new Date(booking.checkIn);
+    const checkOutDate = new Date(booking.checkOut);
+    expect(checkInDate < fromDate || checkOutDate > toDate).toBeFalsy();
+  });
 });
 
-Given('a booking exists with check‑in date {string}', async function (date) {
-  // Mock
+Given('a booking exists with check‑in date {string}', async ({}, date) => {
+  scenarioState.targetCheckInDate = date;
 });
 
-When('I select that booking on {string} or later', async function (date) {
-  // Assume booking id
-});
+When('I select that booking on {string} or later', async ({ page }, date) => {
+  const bookingOverviewPage = new BookingOverviewPage(page);
+  await bookingOverviewPage.waitForBookingList();
 
-When('I mark it as {string}', async function (status) {
-  if (status === 'Checked‑in') {
-    await this.bookingOverviewPage.markCheckedIn('some-id');
-  } else if (status === 'Checked‑out') {
-    await this.bookingOverviewPage.markCheckedOut('some-id');
+  const bookingId = await bookingOverviewPage.findBookingIdByDate({
+    checkIn: scenarioState.targetCheckInDate,
+  });
+
+  if (!bookingId) {
+    throw new Error(`Could not find booking with check-in date ${scenarioState.targetCheckInDate}`);
   }
+
+  scenarioState.selectedBookingId = bookingId;
+  scenarioState.actionDate = date;
 });
 
-Then('the booking status should be updated to {string}', async function (status) {
-  const currentStatus = await this.bookingOverviewPage.getStatusByBookingId('some-id');
-  expect(currentStatus).toBe(status);
+When('I mark it as {string}', async ({ page }, status) => {
+  const bookingOverviewPage = new BookingOverviewPage(page);
+  const bookingId = scenarioState.selectedBookingId;
+
+  if (!bookingId) {
+    throw new Error('No booking selected in scenario state');
+  }
+
+  if (status === 'Checked‑in' || status === 'Checked-in') {
+    await bookingOverviewPage.markCheckedIn(bookingId);
+  } else if (status === 'Checked‑out' || status === 'Checked-out') {
+    await bookingOverviewPage.markCheckedOut(bookingId);
+  }
+
+  scenarioState.expectedStatus = status.replace('‑', '-');
 });
 
-Then('the UI should reflect the new status', async function () {
-  // Placeholder
+Then('the booking status should be updated to {string}', async ({ page }, status) => {
+  const bookingOverviewPage = new BookingOverviewPage(page);
+  const bookingId = scenarioState.selectedBookingId;
+  const currentStatus = await bookingOverviewPage.getStatusByBookingId(bookingId);
+  expect(currentStatus).toContain(status.replace('‑', '-'));
 });
 
-Given('a booking exists with check‑out date {string}', async function (date) {
-  // Mock
+Then('the UI should reflect the new status', async ({ page }) => {
+  const bookingId = scenarioState.selectedBookingId;
+  const expectedStatus = scenarioState.expectedStatus;
+
+  const statusLocator = page.locator(`.booking-item[data-id="${bookingId}"] .status`);
+  await expect(statusLocator).toContainText(expectedStatus);
+});
+
+Given('a booking exists with check‑out date {string}', async ({}, date) => {
+  scenarioState.targetCheckOutDate = date;
 });

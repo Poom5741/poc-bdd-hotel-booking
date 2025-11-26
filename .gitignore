@@ -137,6 +137,7 @@ go.work
 test-results/
 playwright-report/
 playwright/.cache/
+**/.features-gen/
 
 # E2E test artifacts
 **/test-results/
@@ -154,4 +155,3 @@ playwright/.cache/
 # Local development
 .local
 *.local
-

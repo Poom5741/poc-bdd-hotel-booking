@@ -1,58 +1,103 @@
-const { Given, When, Then } = require('@cucumber/cucumber');
+const { createBdd } = require('playwright-bdd');
 const { expect } = require('@playwright/test');
 const MyBookingsPage = require('../../pages/guest/MyBookingsPage');
+const LoginPage = require('../../pages/guest/LoginPage');
 
-Given('I am logged in as a guest user', async function () {
-  // Assume login step or mock
+const { Before, Given, When, Then } = createBdd();
+
+let scenarioState = {};
+
+Before(() => {
+  scenarioState = {};
 });
 
-When('I navigate to the {string} page', async function (pageName) {
+Given('I am logged in as a guest user', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+  await loginPage.fillEmail('guest1@stayflex.test');
+  await loginPage.fillPassword('password123');
+  await loginPage.submit();
+  await expect(page).toHaveURL(/\/dashboard/);
+});
+
+When('I navigate to the {string} page', async ({ page }, pageName) => {
   if (pageName === 'My Bookings') {
-    this.myBookingsPage = new MyBookingsPage(this.page);
-    await this.myBookingsPage.goto();
+    const myBookingsPage = new MyBookingsPage(page);
+    await myBookingsPage.goto();
+    await myBookingsPage.waitForBookingList();
   }
 });
 
-Then('I should see a list of future bookings', async function () {
-  const bookings = await this.myBookingsPage.getBookingList();
-  expect(bookings.length).toBeGreaterThan(0);
+Given('I am on the {string} page', async ({ page }, pageName) => {
+  if (pageName === 'My Bookings') {
+    const myBookingsPage = new MyBookingsPage(page);
+    await myBookingsPage.goto();
+    await myBookingsPage.waitForBookingList();
+  }
 });
 
-Then('I should see a separate list of past bookings', async function () {
-  // Placeholder
+Then('I should see a list of future bookings', async ({ page }) => {
+  const myBookingsPage = new MyBookingsPage(page);
+  const bookings = await myBookingsPage.getBookingsMeta();
+  const futureBookings = bookings.filter((booking) =>
+    (booking.status || '').toLowerCase().includes('future'),
+  );
+  expect(futureBookings.length).toBeGreaterThan(0);
 });
 
-Given('I have a future booking with check‑in date {string}', async function (date) {
-  // Mock
+Then('I should see a separate list of past bookings', async ({ page }) => {
+  const myBookingsPage = new MyBookingsPage(page);
+  const bookings = await myBookingsPage.getBookingsMeta();
+  const pastBookings = bookings.filter((booking) =>
+    (booking.status || '').toLowerCase().includes('past'),
+  );
+  expect(pastBookings.length).toBeGreaterThan(0);
 });
 
-When('I click the cancel button for that booking', async function () {
-  // Assume booking id
-  await this.myBookingsPage.cancelBookingById('some-id');
+Given('I have a future booking with check‑in date {string}', async ({}, date) => {
+  scenarioState.targetFutureCheckIn = date;
 });
 
-Then('the booking should be removed from the future bookings list', async function () {
-  // Check list
+When('I click the cancel button for that booking', async ({ page }) => {
+  const myBookingsPage = new MyBookingsPage(page);
+  await myBookingsPage.waitForBookingList();
+  const bookingId = await myBookingsPage.findBookingIdByDate(scenarioState.targetFutureCheckIn);
+
+  if (!bookingId) {
+    throw new Error(`Could not find booking with check-in date ${scenarioState.targetFutureCheckIn}`);
+  }
+
+  scenarioState.selectedBookingId = bookingId;
+  await myBookingsPage.cancelBookingById(bookingId);
 });
 
-Then('I should see a confirmation message {string}', async function (message) {
-  const confirmation = await this.page.locator('.confirmation-message').textContent();
+Then('the booking should be removed from the future bookings list', async ({ page }) => {
+  const bookingId = scenarioState.selectedBookingId;
+  const bookingLocator = page.locator(`.booking-item[data-id="${bookingId}"]`);
+  await expect(bookingLocator).toBeHidden();
+});
+
+Then('I should see a confirmation message {string}', async ({ page }, message) => {
+  const confirmation = await page.locator('.confirmation-message').textContent();
   expect(confirmation).toContain(message);
 });
 
-Given('I have a past booking with check‑in date {string}', async function (date) {
-  // Mock
+Given('I have a past booking with check‑in date {string}', async ({}, date) => {
+  scenarioState.targetPastCheckIn = date;
 });
 
-When('I look for a cancel button for that booking', async function () {
-  // Check visibility
+When('I look for a cancel button for that booking', async ({ page }) => {
+  const myBookingsPage = new MyBookingsPage(page);
+  const bookingId = await myBookingsPage.findBookingIdByDate(scenarioState.targetPastCheckIn);
+  scenarioState.selectedBookingId = bookingId;
 });
 
-Then('I should not see a cancel option', async function () {
-  // Assert no cancel button
+Then('I should not see a cancel option', async ({ page }) => {
+  const bookingId = scenarioState.selectedBookingId;
+  const cancelButton = page.locator(`.booking-item[data-id="${bookingId}"] .cancel-button`);
+  await expect(cancelButton).toBeHidden();
 });
 
-Then('I should see a label {string}', async function (label) {
-  const labelElement = await this.page.locator('.label').textContent();
-  expect(labelElement).toContain(label);
+Then('I should see a label {string}', async ({ page }, label) => {
+  await expect(page.getByText(label, { exact: false })).toBeVisible();
 });

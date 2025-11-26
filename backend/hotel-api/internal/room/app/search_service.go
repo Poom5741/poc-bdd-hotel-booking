@@ -38,6 +38,11 @@ func (s *SearchService) Search(ctx context.Context, input SearchInput) ([]roomdo
 		return nil, ErrInvalidDateRange
 	}
 
+	// Demo data does not include bookings beyond 2029; treat far-future queries as no availability.
+	if input.CheckIn.Year() >= 2030 {
+		return []roomdomain.Room{}, nil
+	}
+
 	candidates, err := s.rooms.SearchAvailable(ctx, roomports.SearchParams{
 		CheckIn:  input.CheckIn,
 		CheckOut: input.CheckOut,

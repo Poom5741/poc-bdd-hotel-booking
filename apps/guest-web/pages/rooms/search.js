@@ -12,6 +12,7 @@ export default function RoomSearch() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [validationError, setValidationError] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,9 +38,11 @@ export default function RoomSearch() {
       }
       const data = await res.json();
       setRooms(data.rooms || []);
+      setHasSearched(true);
     } catch (err) {
       setError(err.message || 'Unable to search rooms');
       setRooms([]);
+      setHasSearched(true);
     } finally {
       setLoading(false);
     }
@@ -94,7 +97,7 @@ export default function RoomSearch() {
         </form>
 
         <div className="results">
-          {rooms.length === 0 && !loading ? (
+          {rooms.length === 0 && !loading && hasSearched ? (
             <p className="no-rooms-message">No rooms available</p>
           ) : (
             <div className="room-grid">

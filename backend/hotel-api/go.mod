@@ -1,3 +1,3 @@
 module github.com/yourorg/hotel-api
 
-go 1.23.4
+go 1.22

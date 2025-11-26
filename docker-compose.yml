@@ -1,0 +1,24 @@
+services:
+  hotel-api:
+    build:
+      context: .
+      dockerfile: backend/hotel-api/Dockerfile
+    image: stayflex/hotel-api:local
+    environment:
+      - PORT=8080
+    ports:
+      - "8080:8080"
+
+  e2e:
+    build:
+      context: .
+      dockerfile: tests/e2e/Dockerfile
+    image: stayflex/e2e:local
+    depends_on:
+      - hotel-api
+    environment:
+      - BASE_URL=${BASE_URL:-http://host.docker.internal:3000}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    shm_size: 1g
+    entrypoint: ["npm", "test"]

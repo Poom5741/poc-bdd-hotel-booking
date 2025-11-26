@@ -13,25 +13,25 @@ import (
 	roomports "github.com/yourorg/hotel-api/internal/room/ports"
 )
 
-type inMemoryStore struct {
+type InMemoryStore struct {
 	users    map[string]authdomain.User
 	rooms    map[string]roomdomain.Room
 	bookings map[string]bookingdomain.Booking
 }
 
-var _ authports.UserRepository = (*inMemoryStore)(nil)
-var _ roomports.RoomRepository = (*inMemoryStore)(nil)
-var _ bookingports.BookingRepository = (*inMemoryStore)(nil)
+var _ authports.UserRepository = (*InMemoryStore)(nil)
+var _ roomports.RoomRepository = (*InMemoryStore)(nil)
+var _ bookingports.BookingRepository = (*InMemoryStore)(nil)
 
-func newInMemoryStore() *inMemoryStore {
-	return &inMemoryStore{
+func NewInMemoryStore() *InMemoryStore {
+	return &InMemoryStore{
 		users:    make(map[string]authdomain.User),
 		rooms:    make(map[string]roomdomain.Room),
 		bookings: make(map[string]bookingdomain.Booking),
 	}
 }
 
-func (s *inMemoryStore) SaveUser(ctx context.Context, user authdomain.User) error {
+func (s *InMemoryStore) SaveUser(ctx context.Context, user authdomain.User) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -44,7 +44,7 @@ func (s *inMemoryStore) SaveUser(ctx context.Context, user authdomain.User) erro
 	return nil
 }
 
-func (s *inMemoryStore) FindByEmail(ctx context.Context, email string) (*authdomain.User, error) {
+func (s *InMemoryStore) FindByEmail(ctx context.Context, email string) (*authdomain.User, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -59,7 +59,7 @@ func (s *inMemoryStore) FindByEmail(ctx context.Context, email string) (*authdom
 	return nil, nil
 }
 
-func (s *inMemoryStore) SaveRoom(ctx context.Context, room roomdomain.Room) error {
+func (s *InMemoryStore) SaveRoom(ctx context.Context, room roomdomain.Room) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -72,7 +72,7 @@ func (s *inMemoryStore) SaveRoom(ctx context.Context, room roomdomain.Room) erro
 	return nil
 }
 
-func (s *inMemoryStore) SearchAvailable(ctx context.Context, params roomports.SearchParams) ([]roomdomain.Room, error) {
+func (s *InMemoryStore) SearchAvailable(ctx context.Context, params roomports.SearchParams) ([]roomdomain.Room, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -92,7 +92,7 @@ func (s *inMemoryStore) SearchAvailable(ctx context.Context, params roomports.Se
 	return result, nil
 }
 
-func (s *inMemoryStore) SaveBooking(ctx context.Context, booking bookingdomain.Booking) error {
+func (s *InMemoryStore) SaveBooking(ctx context.Context, booking bookingdomain.Booking) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -109,11 +109,11 @@ func (s *inMemoryStore) SaveBooking(ctx context.Context, booking bookingdomain.B
 }
 
 // Create implements bookingports.BookingRepository.
-func (s *inMemoryStore) Create(ctx context.Context, booking bookingdomain.Booking) error {
+func (s *InMemoryStore) Create(ctx context.Context, booking bookingdomain.Booking) error {
 	return s.SaveBooking(ctx, booking)
 }
 
-func (s *inMemoryStore) FindByUser(ctx context.Context, userID string) ([]bookingdomain.Booking, error) {
+func (s *InMemoryStore) FindByUser(ctx context.Context, userID string) ([]bookingdomain.Booking, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()

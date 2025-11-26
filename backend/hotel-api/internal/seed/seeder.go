@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/yourorg/hotel-api/internal/auth/app"
 	authdomain "github.com/yourorg/hotel-api/internal/auth/domain"
 	bookingdomain "github.com/yourorg/hotel-api/internal/booking/domain"
 	roomdomain "github.com/yourorg/hotel-api/internal/room/domain"
@@ -39,7 +40,7 @@ func NewSeeder(users userWriter, rooms roomWriter, bookings bookingWriter) *Seed
 }
 
 func Run(ctx context.Context) error {
-	mem := newInMemoryStore()
+	mem := NewInMemoryStore()
 	seeder := NewSeeder(mem, mem, mem)
 	return seeder.Seed(ctx)
 }
@@ -50,7 +51,7 @@ func (s *Seeder) Seed(ctx context.Context) error {
 	admin := authdomain.User{
 		ID:           "user-admin-1",
 		Email:        "admin@stayflex.test",
-		PasswordHash: "hashed-admin123",
+		PasswordHash: app.HashForSeed("admin123"),
 		Role:         "admin",
 	}
 
@@ -58,13 +59,13 @@ func (s *Seeder) Seed(ctx context.Context) error {
 		{
 			ID:           "user-guest-1",
 			Email:        "guest1@stayflex.test",
-			PasswordHash: "hashed-password123",
+			PasswordHash: app.HashForSeed("password123"),
 			Role:         "guest",
 		},
 		{
 			ID:           "user-guest-2",
 			Email:        "guest2@stayflex.test",
-			PasswordHash: "hashed-password456",
+			PasswordHash: app.HashForSeed("password456"),
 			Role:         "guest",
 		},
 	}

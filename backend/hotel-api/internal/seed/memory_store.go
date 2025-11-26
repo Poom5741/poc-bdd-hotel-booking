@@ -128,3 +128,17 @@ func (s *InMemoryStore) FindByUser(ctx context.Context, userID string) ([]bookin
 	}
 	return result, nil
 }
+
+func (s *InMemoryStore) List(ctx context.Context) ([]bookingdomain.Booking, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
+	var bookings []bookingdomain.Booking
+	for _, b := range s.bookings {
+		bookings = append(bookings, b)
+	}
+	return bookings, nil
+}

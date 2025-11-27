@@ -15,11 +15,16 @@ export function middleware(req) {
 
   const isProtected = pathname.startsWith('/admin') && pathname !== '/admin/login';
 
-  // If guest user (has auth_token but not admin_auth_token) tries to access admin routes
+  // Allow dashboard to render for guest users (it will show "Access denied" before redirecting)
+  if (pathname === '/admin/dashboard' && guestToken && !adminToken) {
+    return NextResponse.next();
+  }
+
+  // If guest user (has auth_token but not admin_auth_token) tries to access other admin routes
   if (isProtected && guestToken && !adminToken) {
     const url = req.nextUrl.clone();
     url.pathname = '/admin/login';
-    url.searchParams.set('denied', 'true');
+    url.search = '';
     return NextResponse.redirect(url);
   }
 

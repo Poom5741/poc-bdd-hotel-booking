@@ -20,21 +20,26 @@ export default function AdminLogin() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        credentials: 'include',
       });
 
       if (!res.ok) {
         const message = await res.text();
-        throw new Error(message || 'Login failed');
+        setError(message || 'Invalid credentials');
+        return;
       }
 
       const data = await res.json();
       if (data.role !== 'admin') {
-        throw new Error('Access denied');
+        setError('Access denied');
+        return;
       }
 
       document.cookie = `admin_auth_token=${data.token}; path=/`;
-      localStorage.setItem('admin_role', data.role);
-      localStorage.setItem('admin_email', data.email);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('admin_role', data.role);
+        localStorage.setItem('admin_email', data.email);
+      }
       await router.push('/admin/dashboard');
     } catch (err) {
       setError(err.message || 'Invalid credentials');

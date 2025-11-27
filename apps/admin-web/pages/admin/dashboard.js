@@ -5,28 +5,35 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [accessDenied, setAccessDenied] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const adminToken = getCookie('admin_auth_token');
-    const guestToken = getCookie('auth_token');
-    const role = localStorage.getItem('admin_role');
-    const savedEmail = localStorage.getItem('admin_email') || '';
+    const checkAuth = () => {
+      const adminToken = getCookie('admin_auth_token');
+      const guestToken = getCookie('auth_token');
+      const role = typeof window !== 'undefined' ? localStorage.getItem('admin_role') : null;
+      const savedEmail = typeof window !== 'undefined' ? localStorage.getItem('admin_email') || '' : '';
 
-    // Check if guest user (has auth_token but not admin_auth_token) is trying to access
-    if (guestToken && !adminToken) {
-      setAccessDenied(true);
-      setTimeout(() => {
+      // Check if guest user (has auth_token but not admin_auth_token) is trying to access
+      if (guestToken && !adminToken) {
+        setAccessDenied(true);
+        setLoading(false);
+        setTimeout(() => {
+          router.replace('/admin/login');
+        }, 2000);
+        return;
+      }
+
+      if (!adminToken || role !== 'admin') {
         router.replace('/admin/login');
-      }, 1000);
-      return;
-    }
+        return;
+      }
 
-    if (!adminToken || role !== 'admin') {
-      router.replace('/admin/login');
-      return;
-    }
+      setEmail(savedEmail);
+      setLoading(false);
+    };
 
-    setEmail(savedEmail);
+    checkAuth();
   }, [router]);
 
   if (accessDenied) {
@@ -35,6 +42,17 @@ export default function AdminDashboard() {
         <section className="card">
           <h1 className="title">Admin Dashboard</h1>
           <p className="error-message">Access denied</p>
+        </section>
+      </main>
+    );
+  }
+
+  if (loading) {
+    return (
+      <main className="page">
+        <section className="card">
+          <h1 className="title">Admin Dashboard</h1>
+          <p>Loading...</p>
         </section>
       </main>
     );

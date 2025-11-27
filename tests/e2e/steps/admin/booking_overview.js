@@ -54,8 +54,20 @@ Then('the list should not contain bookings outside the range', async ({ page }) 
   });
 });
 
+// Accept both hyphen variants (non-breaking and ASCII)
 Given('a booking exists with check‑in date {string}', async ({}, date) => {
   scenarioState.targetCheckInDate = date;
+});
+Given('a booking exists with check-in date {string}', async ({}, date) => {
+  scenarioState.targetCheckInDate = date;
+});
+
+// Handle check-out date scenarios
+Given('a booking exists with check‑out date {string}', async ({}, date) => {
+  scenarioState.targetCheckOutDate = date;
+});
+Given('a booking exists with check-out date {string}', async ({}, date) => {
+  scenarioState.targetCheckOutDate = date;
 });
 
 When('I select that booking on {string} or later', async ({ page }, date) => {
@@ -64,10 +76,14 @@ When('I select that booking on {string} or later', async ({ page }, date) => {
 
   const bookingId = await bookingOverviewPage.findBookingIdByDate({
     checkIn: scenarioState.targetCheckInDate,
+    checkOut: scenarioState.targetCheckOutDate,
   });
 
   if (!bookingId) {
-    throw new Error(`Could not find booking with check-in date ${scenarioState.targetCheckInDate}`);
+    const dateInfo = scenarioState.targetCheckInDate 
+      ? `check-in date ${scenarioState.targetCheckInDate}` 
+      : `check-out date ${scenarioState.targetCheckOutDate}`;
+    throw new Error(`Could not find booking with ${dateInfo}`);
   }
 
   scenarioState.selectedBookingId = bookingId;
@@ -104,8 +120,4 @@ Then('the UI should reflect the new status', async ({ page }) => {
 
   const statusLocator = page.locator(`.booking-item[data-id="${bookingId}"] .status`);
   await expect(statusLocator).toContainText(expectedStatus);
-});
-
-Given('a booking exists with check‑out date {string}', async ({}, date) => {
-  scenarioState.targetCheckOutDate = date;
 });

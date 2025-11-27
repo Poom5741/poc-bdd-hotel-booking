@@ -146,7 +146,7 @@ export default function AdminRooms() {
     <main className="page">
       <section className="card" style={{ width: '100%', maxWidth: 840 }}>
         <h1 className="title">Room Management</h1>
-        {error && <p className="error-message" role="alert">{error}</p>}
+        {error && <p className="error-message" role="alert" aria-live="polite">{error}</p>}
 
         <button className="create-room-button" type="button" onClick={() => {}}>
           Create Room

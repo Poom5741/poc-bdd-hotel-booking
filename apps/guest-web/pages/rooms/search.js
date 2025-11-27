@@ -147,7 +147,7 @@ export default function RoomSearch() {
                   data-price={room.displayPrice || room.basePrice}
                   onClick={() => {
                     setSelectedRoom(room);
-                    setBookingGuests(guests || 1);
+                    setBookingGuests(guests);
                     setBookingMessage('');
                   }}
                 >
@@ -161,11 +161,12 @@ export default function RoomSearch() {
                     onClick={async (e) => {
                       e.stopPropagation();
                       setSelectedRoom(room);
+                      setBookingGuests(guests);
                       await handleBooking({
                         room,
                         checkIn: checkIn || '2025-12-10',
                         checkOut: checkOut || '2025-12-12',
-                        guests: guests || 1,
+                        guests: guests,
                         setBookingMessage,
                         setSelectedRoom,
                         setBookingLoading,
@@ -184,14 +185,25 @@ export default function RoomSearch() {
           <div className="booking-panel">
             <h2>Book Now</h2>
             <p>
-              {checkIn} → {checkOut} · {bookingGuests} guests
+              {checkIn} → {checkOut} · {bookingGuests} guest{bookingGuests !== 1 ? 's' : ''}
             </p>
             <p>Room: {selectedRoom.name}</p>
             <p>Price per night: ${selectedRoom.displayPrice || selectedRoom.basePrice}</p>
             {bookingMessage && <p className="error-message">{bookingMessage}</p>}
+            <label className="label">
+              Number of Guests
+              <input
+                name="bookingGuests"
+                type="number"
+                min="1"
+                value={bookingGuests}
+                onChange={(e) => setBookingGuests(parseInt(e.target.value, 10) || 1)}
+                className="input"
+              />
+            </label>
             <button
               type="button"
-              className="submit-booking"
+              className="confirm-booking-button"
               onClick={async () =>
                 handleBooking({
                   room: selectedRoom,

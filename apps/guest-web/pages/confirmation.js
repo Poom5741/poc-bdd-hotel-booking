@@ -43,6 +43,8 @@ export default function Confirmation() {
 function calcNights(checkIn, checkOut) {
   const start = new Date(checkIn);
   const end = new Date(checkOut);
-  const diff = end - start;
-  return Math.max(0, Math.round(diff / (1000 * 60 * 60 * 24)));
+  const startUTC = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+  const endUTC = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+  const diffDays = Math.floor((endUTC - startUTC) / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
 }

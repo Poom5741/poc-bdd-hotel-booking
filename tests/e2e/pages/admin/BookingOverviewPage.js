@@ -7,6 +7,7 @@ class BookingOverviewPage {
     this.bookingList = page.locator('.booking-item');
     this.checkInButton = page.locator('.check-in-button');
     this.checkOutButton = page.locator('.check-out-button');
+    this.articleList = page.locator('article');
   }
 
   async goto() {
@@ -14,7 +15,12 @@ class BookingOverviewPage {
   }
 
   async waitForBookingList() {
-    await this.bookingList.first().waitFor({ state: 'visible' });
+    // Wait for either explicit .booking-item or generic article entries
+    if (await this.bookingList.count() > 0) {
+      await this.bookingList.first().waitFor({ state: 'visible' });
+    } else {
+      await this.articleList.first().waitFor({ state: 'visible' });
+    }
   }
 
   async filterBookings(fromDate, toDate) {
@@ -38,41 +44,69 @@ class BookingOverviewPage {
   }
 
   async getBookingsMeta() {
-    return await this.bookingList.evaluateAll((nodes) =>
-      nodes.map((node) => {
-        const dataset = node.dataset || {};
-        const statusText =
-          node.querySelector('.status')?.textContent?.trim() ||
-          dataset.status ||
-          '';
+    // Prefer .booking-item with data attributes; fallback to parsing article paragraphs
+    if (await this.bookingList.count() > 0) {
+      return await this.bookingList.evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const dataset = node.dataset || {};
+          const statusText =
+            node.querySelector('.status')?.textContent?.trim() ||
+            dataset.status ||
+            '';
 
-        return {
-          id: dataset.id || node.getAttribute('data-id') || '',
-          checkIn:
-            dataset.checkin ||
-            dataset.checkIn ||
-            node.getAttribute('data-checkin') ||
-            node.getAttribute('data-check-in') ||
-            '',
-          checkOut:
-            dataset.checkout ||
-            dataset.checkOut ||
-            node.getAttribute('data-checkout') ||
-            node.getAttribute('data-check-out') ||
-            '',
-          status: statusText,
-        };
+          return {
+            id: dataset.id || node.getAttribute('data-id') || '',
+            checkIn:
+              dataset.checkin ||
+              dataset.checkIn ||
+              node.getAttribute('data-checkin') ||
+              node.getAttribute('data-check-in') ||
+              '',
+            checkOut:
+              dataset.checkout ||
+              dataset.checkOut ||
+              node.getAttribute('data-checkout') ||
+              node.getAttribute('data-check-out') ||
+              '',
+            status: statusText,
+          };
+        }),
+      );
+    }
+
+    // Fallback: parse articles with paragraphs like "YYYY-MM-DD → YYYY-MM-DD"
+    return await this.articleList.evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const normalize = (s) => (s || '').replace(/\u2011/g, '-').replace(/\u00a0/g, ' ').trim();
+        const text1 = normalize(node.querySelector('p')?.textContent || '');
+        let checkIn = '';
+        let checkOut = '';
+        if (text1.includes('→')) {
+          const parts = text1.split('→').map((x) => normalize(x));
+          checkIn = parts[0];
+          checkOut = parts[1] || '';
+        } else if (text1.includes('->')) {
+          const parts = text1.split('->').map((x) => normalize(x));
+          checkIn = parts[0];
+          checkOut = parts[1] || '';
+        }
+        const statusText = normalize(node.querySelectorAll('p')[1]?.textContent || '');
+        const idAttr = node.querySelector('.booking-item')?.getAttribute('data-id') || '';
+        return { id: idAttr, checkIn, checkOut, status: statusText };
       }),
     );
   }
 
   async findBookingIdByDate({ checkIn, checkOut }) {
+    const normalize = (s) => (s || '').replace(/\u2011/g, '-').trim();
+    const targetIn = normalize(checkIn);
+    const targetOut = normalize(checkOut);
     const bookings = await this.getBookingsMeta();
-    const match = bookings.find(
-      (booking) =>
-        (checkIn && booking.checkIn?.startsWith(checkIn)) ||
-        (checkOut && booking.checkOut?.startsWith(checkOut)),
-    );
+    const match = bookings.find((booking) => {
+      const bIn = normalize(booking.checkIn);
+      const bOut = normalize(booking.checkOut);
+      return (targetIn && bIn === targetIn) || (targetOut && bOut === targetOut);
+    });
     return match?.id;
   }
 

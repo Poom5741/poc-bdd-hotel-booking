@@ -32,6 +32,13 @@ const fallbackBookings = [
     checkOut: '2025-12-15',
   },
   {
+    id: 'booking-7',
+    roomId: 'room-102',
+    status: 'confirmed',
+    checkIn: '2025-12-10',
+    checkOut: '2025-12-15',
+  },
+  {
     id: 'booking-3',
     roomId: 'room-301',
     status: 'past',

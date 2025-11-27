@@ -64,7 +64,11 @@ export default function AdminRooms() {
             Save
           </button>
         </div>
-        {error && <p className="error-message">{error}</p>}
+        {error && (
+          <p className="error-message" role="alert">
+            {error}
+          </p>
+        )}
         <div className="room-grid" style={{ marginTop: 16 }}>
           {rooms.map((room) => (
             <article key={room.id} className="room-item" data-id={room.id}>

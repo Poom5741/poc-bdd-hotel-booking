@@ -26,5 +26,5 @@ Feature: Admin room management
     Given room "102" has a future booking from "2025-12-01" to "2025-12-05"
     And I am on the admin room management page
     When I attempt to delete room "102"
-    Then I should see an error message "Cannot delete room with future bookings"
+    Then I should see an error room message "Cannot delete room with future bookings"
     And the room should remain in the system

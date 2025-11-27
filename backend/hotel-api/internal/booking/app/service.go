@@ -18,6 +18,8 @@ var (
 	ErrBookingNotFound  = errors.New("booking not found")
 	ErrGuestsExceedRoom = errors.New("guests exceed room capacity")
 	ErrRoomNotFound     = errors.New("room not found")
+	ErrTooEarlyCheckIn  = errors.New("cannot check in before the check-in date")
+	ErrTooEarlyCheckOut = errors.New("cannot check out before the check-out date")
 )
 
 type Service struct {
@@ -48,6 +50,11 @@ type CreateResponse struct {
 	CheckIn  time.Time
 	CheckOut time.Time
 	Status   string
+}
+
+type ListFilters struct {
+	From *time.Time
+	To   *time.Time
 }
 
 func (s *Service) Create(ctx context.Context, req CreateRequest) (*CreateResponse, error) {
@@ -116,6 +123,29 @@ func (s *Service) ListByUser(ctx context.Context, userID string) ([]bookingdomai
 	return s.bookings.FindByUser(ctx, userID)
 }
 
+func (s *Service) List(ctx context.Context, filters ListFilters) ([]bookingdomain.Booking, error) {
+	bookings, err := s.bookings.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []bookingdomain.Booking
+	for _, b := range bookings {
+		checkInDate := startOfDay(b.CheckIn)
+		checkOutDate := startOfDay(b.CheckOut)
+
+		if filters.From != nil && checkInDate.Before(startOfDay(*filters.From)) {
+			continue
+		}
+		if filters.To != nil && checkOutDate.After(endOfDay(*filters.To)) {
+			continue
+		}
+		result = append(result, b)
+	}
+
+	return result, nil
+}
+
 func (s *Service) Cancel(ctx context.Context, bookingID string) error {
 	b, err := s.bookings.FindByID(ctx, bookingID)
 	if err != nil {
@@ -134,6 +164,68 @@ func (s *Service) Cancel(ctx context.Context, bookingID string) error {
 	return s.bookings.Update(ctx, *b)
 }
 
+func (s *Service) CheckIn(ctx context.Context, bookingID string, actionTime time.Time) (*bookingdomain.Booking, error) {
+	booking, err := s.bookings.FindByID(ctx, bookingID)
+	if err != nil {
+		return nil, err
+	}
+	if booking == nil {
+		return nil, ErrBookingNotFound
+	}
+
+	if actionTime.IsZero() {
+		actionTime = s.nowFn()
+	}
+
+	if beforeDate(actionTime, booking.CheckIn) {
+		return nil, ErrTooEarlyCheckIn
+	}
+
+	booking.Status = "Checked-in"
+	if err := s.bookings.Update(ctx, *booking); err != nil {
+		return nil, err
+	}
+	return booking, nil
+}
+
+func (s *Service) CheckOut(ctx context.Context, bookingID string, actionTime time.Time) (*bookingdomain.Booking, error) {
+	booking, err := s.bookings.FindByID(ctx, bookingID)
+	if err != nil {
+		return nil, err
+	}
+	if booking == nil {
+		return nil, ErrBookingNotFound
+	}
+
+	if actionTime.IsZero() {
+		actionTime = s.nowFn()
+	}
+
+	if beforeDate(actionTime, booking.CheckOut) {
+		return nil, ErrTooEarlyCheckOut
+	}
+
+	booking.Status = "Checked-out"
+	if err := s.bookings.Update(ctx, *booking); err != nil {
+		return nil, err
+	}
+	return booking, nil
+}
+
 func overlaps(startA, endA, startB, endB time.Time) bool {
 	return startA.Before(endB) && endA.After(startB)
+}
+
+func startOfDay(t time.Time) time.Time {
+	y, m, d := t.Date()
+	return time.Date(y, m, d, 0, 0, 0, 0, t.Location())
+}
+
+func endOfDay(t time.Time) time.Time {
+	y, m, d := t.Date()
+	return time.Date(y, m, d, 23, 59, 59, int(time.Second-time.Nanosecond), t.Location())
+}
+
+func beforeDate(a, b time.Time) bool {
+	return startOfDay(a).Before(startOfDay(b))
 }

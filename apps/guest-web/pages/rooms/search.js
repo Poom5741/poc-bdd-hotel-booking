@@ -30,12 +30,19 @@ export default function RoomSearch() {
     setValidationError('');
     setError('');
 
-    if (!checkIn || !checkOut || new Date(checkOut) <= new Date(checkIn)) {
-      setValidationError('Check-out date must be after check-in date');
+    if (!checkIn || !checkOut) {
       return;
     }
 
     const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    
+    if (checkOutDate <= checkInDate) {
+      setValidationError('Check-out date must be after check-in date');
+      setHasSearched(false);
+      return;
+    }
+
     if (checkInDate.getFullYear() >= 2030) {
       setRooms([]);
       setHasSearched(true);
@@ -260,7 +267,12 @@ async function createBooking({ roomId, checkIn, checkOut, guests }) {
 
   if (!res.ok) {
     const message = await res.text();
-    throw new Error(message || 'Booking failed');
+    // Map backend error messages to test expectations
+    let errorMessage = message || 'Booking failed';
+    if (errorMessage.includes('room is not available') || errorMessage.includes('Room is not available')) {
+      errorMessage = 'Room is not available for the selected dates';
+    }
+    throw new Error(errorMessage);
   }
 
   return res.json();

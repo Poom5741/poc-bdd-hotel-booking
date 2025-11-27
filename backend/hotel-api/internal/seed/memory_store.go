@@ -72,6 +72,66 @@ func (s *InMemoryStore) SaveRoom(ctx context.Context, room roomdomain.Room) erro
 	return nil
 }
 
+// UpdateRoomStatus implements roomports.RoomRepository.
+func (s *InMemoryStore) UpdateRoomStatus(ctx context.Context, id string, status string) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+	room, ok := s.rooms[id]
+	if !ok {
+		return errors.New("room not found")
+	}
+	room.Status = status
+	s.rooms[id] = room
+	return nil
+}
+
+// DeleteRoom implements roomports.RoomRepository.
+func (s *InMemoryStore) DeleteRoom(ctx context.Context, id string) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+	if _, ok := s.rooms[id]; !ok {
+		return errors.New("room not found")
+	}
+	delete(s.rooms, id)
+	return nil
+}
+
+// ListRooms implements roomports.RoomRepository.
+func (s *InMemoryStore) ListRooms(ctx context.Context) ([]roomdomain.Room, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
+	var result []roomdomain.Room
+	for _, r := range s.rooms {
+		result = append(result, r)
+	}
+	return result, nil
+}
+
+// FindRoomByID implements roomports.RoomRepository.
+func (s *InMemoryStore) FindRoomByID(ctx context.Context, id string) (*roomdomain.Room, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
+	if r, ok := s.rooms[id]; ok {
+		roomCopy := r
+		return &roomCopy, nil
+	}
+	return nil, nil
+}
+
 func (s *InMemoryStore) SearchAvailable(ctx context.Context, params roomports.SearchParams) ([]roomdomain.Room, error) {
 	select {
 	case <-ctx.Done():

@@ -35,12 +35,18 @@ func main() {
 	authSvc := authapp.NewService(store, authapp.PlainPasswordChecker{}, authapp.NewStaticTokenIssuer("hotel-api"))
 	roomSearchSvc := roomapp.NewSearchService(store, store)
 	bookingSvc := bookingapp.NewService(store, store)
+	adminRoomSvc := roomapp.NewAdminService(store, store)
+	adminBookingHandler := bookinghttp.NewAdminHandler(bookingSvc)
 
 	mux := http.NewServeMux()
 	mux.Handle("/api/auth/login", authhttp.NewLoginHandler(authSvc))
 	mux.Handle("/api/guest/rooms/search", roomhttp.NewSearchHandler(roomSearchSvc))
+	mux.Handle("/api/admin/rooms", roomhttp.NewAdminHandler(adminRoomSvc))
+	mux.Handle("/api/admin/rooms/", roomhttp.NewAdminHandler(adminRoomSvc))
 	mux.Handle("/api/guest/bookings", bookinghttp.NewHandler(bookingSvc))
 	mux.Handle("/api/guest/bookings/", bookinghttp.NewHandler(bookingSvc))
+	mux.Handle("/api/admin/bookings", adminBookingHandler)
+	mux.Handle("/api/admin/bookings/", adminBookingHandler)
 
 	addr := ":" + envOrDefault("PORT", "8080")
 	server := &http.Server{

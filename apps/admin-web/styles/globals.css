@@ -91,3 +91,51 @@ body {
   color: #0f172a;
   font-weight: 600;
 }
+
+.filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin: 16px 0;
+}
+
+.booking-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.booking-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+}
+
+.status {
+  margin: 4px 0 0;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.check-in-button,
+.check-out-button {
+  padding: 8px 12px;
+  border: 1px solid #d7dce0;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.check-in-button:hover,
+.check-out-button:hover {
+  background: #e2e8f0;
+}
+
+.apply-filter-button {
+  min-width: 120px;
+}

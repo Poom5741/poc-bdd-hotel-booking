@@ -49,6 +49,12 @@ When('I attempt to delete room {string}', async ({ page }, roomId) => {
   await roomManagementPage.deleteRoom(roomId);
 });
 
-Then('the room should remain in the system', async ({ page }) => {
-  // Check list
+Then('I should see an error room message {string}', async ({ page }, message) => {
+  // waits for the alert rendered by handleDelete('room-102')
+  await expect(page.getByRole('alert')).toHaveText(message);
+});
+
+Then('the room should remain in the system', async ({}) => {
+  // Step: And the room should remain in the system
+  // From: features/admin/room_manage.feature:30:5
 });

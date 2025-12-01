@@ -2,6 +2,7 @@ class MyBookingsPage {
   constructor(page) {
     this.page = page;
     this.bookingList = page.locator('.booking-item');
+    this.confirmationMessage = page.locator('.confirmation-message');
   }
 
   async goto() {
@@ -54,6 +55,22 @@ class MyBookingsPage {
   async getStatusByBookingId(id) {
     const statusElement = this.page.locator(`.booking-item[data-id="${id}"] .status`);
     return await statusElement.textContent();
+  }
+
+  getBookingLocatorById(id) {
+    return this.page.locator(`.booking-item[data-id="${id}"]`);
+  }
+
+  async getConfirmationMessage() {
+    return await this.confirmationMessage.textContent();
+  }
+
+  getCancelButtonByBookingId(id) {
+    return this.page.locator(`.booking-item[data-id="${id}"] .cancel-button`);
+  }
+
+  getLabelByBookingId(id, labelText) {
+    return this.page.locator(`.booking-item[data-id="${id}"]`).getByText(labelText, { exact: false });
   }
 }
 

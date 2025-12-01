@@ -2,6 +2,8 @@ const { createBdd } = require('playwright-bdd');
 const { expect } = require('@playwright/test');
 const LoginPage = require('../../pages/guest/LoginPage');
 const AdminLoginPage = require('../../pages/admin/AdminLoginPage');
+const DashboardPage = require('../../pages/guest/DashboardPage');
+const AdminDashboardPage = require('../../pages/admin/AdminDashboardPage');
 
 const { Given, When, Then } = createBdd();
 
@@ -45,12 +47,14 @@ Then('I should remain on {string}', async ({ page }, path) => {
 });
 
 Then('I should see a welcome message', async ({ page }) => {
-  const welcomeText = await page.locator('.welcome-message').textContent();
+  const dashboardPage = new DashboardPage(page);
+  const welcomeText = await dashboardPage.getWelcomeText();
   expect(welcomeText).toBeTruthy();
 });
 
 Then('I should see an admin welcome message', async ({ page }) => {
-  const welcomeText = await page.locator('.admin-welcome-message').textContent();
+  const adminDashboardPage = new AdminDashboardPage(page);
+  const welcomeText = await adminDashboardPage.getWelcomeText();
   expect(welcomeText).toBeTruthy();
 });
 

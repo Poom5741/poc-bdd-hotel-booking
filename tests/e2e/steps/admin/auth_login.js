@@ -10,5 +10,7 @@ Given('I am on the admin login page', async ({ page }) => {
 });
 
 Then('I should see an {string} message', async ({ page }, message) => {
-  await expect(page.getByText(message, { exact: false })).toBeVisible();
+  const adminLoginPage = new AdminLoginPage(page);
+  const messageLocator = adminLoginPage.getMessageByText(message);
+  await expect(messageLocator).toBeVisible();
 });

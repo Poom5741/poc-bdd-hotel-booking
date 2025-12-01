@@ -43,7 +43,7 @@ When('I submit the search', async ({ page }) => {
 });
 
 Then('I should see a validation error message about the date range', async ({ page }) => {
-  // Assume error message locator
-  const error = await page.locator('.validation-error').textContent();
+  const roomSearchPage = new RoomSearchPage(page);
+  const error = await roomSearchPage.getValidationError();
   expect(error).toBeTruthy();
 });

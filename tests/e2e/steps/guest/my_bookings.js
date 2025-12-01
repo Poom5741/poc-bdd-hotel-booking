@@ -73,12 +73,14 @@ When('I click the cancel button for that booking', async ({ page }) => {
 
 Then('the booking should be removed from the future bookings list', async ({ page }) => {
   const bookingId = scenarioState.selectedBookingId;
-  const bookingLocator = page.locator(`.booking-item[data-id="${bookingId}"]`);
+  const myBookingsPage = new MyBookingsPage(page);
+  const bookingLocator = myBookingsPage.getBookingLocatorById(bookingId);
   await expect(bookingLocator).toBeHidden();
 });
 
 Then('I should see a confirmation message {string}', async ({ page }, message) => {
-  const confirmation = await page.locator('.confirmation-message').textContent();
+  const myBookingsPage = new MyBookingsPage(page);
+  const confirmation = await myBookingsPage.getConfirmationMessage();
   expect(confirmation).toContain(message);
 });
 
@@ -94,12 +96,14 @@ When('I look for a cancel button for that booking', async ({ page }) => {
 
 Then('I should not see a cancel option', async ({ page }) => {
   const bookingId = scenarioState.selectedBookingId;
-  const cancelButton = page.locator(`.booking-item[data-id="${bookingId}"] .cancel-button`);
+  const myBookingsPage = new MyBookingsPage(page);
+  const cancelButton = myBookingsPage.getCancelButtonByBookingId(bookingId);
   await expect(cancelButton).toBeHidden();
 });
 
 Then('I should see a label {string}', async ({ page }, label) => {
   const bookingId = scenarioState.selectedBookingId;
-  const labelLocator = page.locator(`.booking-item[data-id="${bookingId}"]`).getByText(label, { exact: false });
+  const myBookingsPage = new MyBookingsPage(page);
+  const labelLocator = myBookingsPage.getLabelByBookingId(bookingId, label);
   await expect(labelLocator).toBeVisible();
 });

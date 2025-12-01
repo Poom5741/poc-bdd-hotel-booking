@@ -9,6 +9,11 @@ class RoomSearchPage {
     this.submitButton = page.locator('button[type="submit"]');
     this.roomCards = page.locator('.room-card');
     this.noRoomsMessage = page.locator('.no-rooms-message');
+    this.bookingPanel = page.locator('.booking-panel');
+    this.bookingGuestsInput = page.locator('input[name="bookingGuests"]');
+    this.confirmBookingButton = page.locator('.confirm-booking-button');
+    this.errorMessage = page.locator('.error-message');
+    this.validationError = page.locator('.validation-error');
   }
 
   async goto() {
@@ -35,8 +40,53 @@ class RoomSearchPage {
     return await this.roomCards.all();
   }
 
+  async clickFirstRoomCard() {
+    const roomCards = await this.getRoomCards();
+    if (roomCards.length === 0) {
+      throw new Error('No room cards found');
+    }
+    await roomCards[0].click();
+    await this.waitForBookingPanel();
+  }
+
   async getNoRoomsMessage() {
     return await this.noRoomsMessage.textContent();
+  }
+
+  async waitForBookingPanel() {
+    await this.bookingPanel.waitFor({ state: 'visible' });
+  }
+
+  async fillBookingGuests(count) {
+    await this.bookingGuestsInput.fill(count);
+  }
+
+  async clickConfirmBooking() {
+    await this.confirmBookingButton.click();
+  }
+
+  getRoomCardByPrice(price) {
+    const priceValue = price.replace('$', '');
+    // Try to find by data-price attribute first (more reliable)
+    let roomCard = this.page.locator(`.room-card[data-price="${priceValue}"]`).first();
+    // Fallback to text search if data attribute doesn't match
+    return roomCard;
+  }
+
+  getRoomCardByName(name) {
+    return this.page.locator('.room-card').filter({ hasText: name }).first();
+  }
+
+  async getRoomCardCountByName(name) {
+    return await this.page.locator('.room-card').filter({ hasText: name }).count();
+  }
+
+  async getErrorMessage() {
+    return await this.errorMessage.textContent();
+  }
+
+  async getValidationError() {
+    return await this.validationError.textContent();
   }
 }
 

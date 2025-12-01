@@ -28,6 +28,10 @@ class AdminLoginPage {
   async getErrorText() {
     return await this.errorText.textContent();
   }
+
+  getMessageByText(text) {
+    return this.page.getByText(text, { exact: false });
+  }
 }
 
 module.exports = AdminLoginPage;

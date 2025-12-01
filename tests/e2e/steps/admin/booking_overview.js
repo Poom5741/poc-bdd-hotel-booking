@@ -118,6 +118,7 @@ Then('the UI should reflect the new status', async ({ page }) => {
   const bookingId = scenarioState.selectedBookingId;
   const expectedStatus = scenarioState.expectedStatus;
 
-  const statusLocator = page.locator(`.booking-item[data-id="${bookingId}"] .status`);
+  const bookingOverviewPage = new BookingOverviewPage(page);
+  const statusLocator = bookingOverviewPage.getStatusLocatorByBookingId(bookingId);
   await expect(statusLocator).toContainText(expectedStatus);
 });

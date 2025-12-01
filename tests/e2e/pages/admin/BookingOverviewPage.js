@@ -114,6 +114,10 @@ class BookingOverviewPage {
     const statusElement = this.page.locator(`.booking-item[data-id="${id}"] .status`);
     return await statusElement.textContent();
   }
+
+  getStatusLocatorByBookingId(id) {
+    return this.page.locator(`.booking-item[data-id="${id}"] .status`);
+  }
 }
 
 module.exports = BookingOverviewPage;

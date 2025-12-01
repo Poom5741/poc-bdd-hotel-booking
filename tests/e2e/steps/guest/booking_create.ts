@@ -1,29 +1,23 @@
-const { createBdd } = require('playwright-bdd');
-const { Given, When, Then } = createBdd();
-const { expect } = require('@playwright/test');
-const RoomSearchPage = require('../../pages/guest/RoomSearchPage');
-const ConfirmationPage = require('../../pages/guest/ConfirmationPage');
+import { expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { Given, When, Then } from '../../fixtures';
 
-When('I select a room card', async ({ page }) => {
-  const roomSearchPage = new RoomSearchPage(page);
+When('I select a room card', async ({ roomSearchPage }) => {
   await roomSearchPage.clickFirstRoomCard();
 });
 
-When('I choose {string} guests', async ({ page }, guests) => {
+When('I choose {string} guests', async ({ roomSearchPage }, guests: string) => {
   // Target booking panel's guest input after room is selected
-  const roomSearchPage = new RoomSearchPage(page);
   await roomSearchPage.fillBookingGuests(guests);
 });
 
-When('I choose {string} guest', async ({ page }, guests) => {
+When('I choose {string} guest', async ({ roomSearchPage }, guests: string) => {
   // Target booking panel's guest input after room is selected
-  const roomSearchPage = new RoomSearchPage(page);
   await roomSearchPage.fillBookingGuests(guests);
 });
 
-When('I submit the booking', async ({ page }) => {
+When('I submit the booking', async ({ roomSearchPage }) => {
   // Click the booking panel's confirm button (not room card buttons)
-  const roomSearchPage = new RoomSearchPage(page);
   await roomSearchPage.clickConfirmBooking();
 });
 
@@ -35,12 +29,12 @@ Then('the booking summary should display the selected dates and number of guests
   // Placeholder
 });
 
-Given('I have an existing booking for room {string} from {string} to {string}', async ({ page }, roomName, checkIn, checkOut) => {
+Given('I have an existing booking for room {string} from {string} to {string}', async ({ page }, roomName: string, checkIn: string, checkOut: string) => {
   // Create a booking via API to setup the scenario
   const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
   
   // Map room name to room ID
-  const roomIdMap = {
+  const roomIdMap: Record<string, string> = {
     'Deluxe Suite': 'room-201',
     'Standard 101': 'room-101',
     'Standard 102': 'room-102'
@@ -61,12 +55,11 @@ Given('I have an existing booking for room {string} from {string} to {string}', 
   });
 });
 
-When('I attempt to book {string}', async ({ page }, roomName) => {
+When('I attempt to book {string}', async ({ page, roomSearchPage }, roomName: string) => {
   // Since the room may not appear in search results (because it's unavailable),
   // we need to directly attempt to create a booking via the API or UI
   // For this negative test, we'll check if the room appears; if not, verify the expected behavior
   
-  const roomSearchPage = new RoomSearchPage(page);
   const roomCard = roomSearchPage.getRoomCardByName(roomName);
   const roomCount = await roomSearchPage.getRoomCardCountByName(roomName);
   
@@ -100,14 +93,13 @@ When('I attempt to book {string}', async ({ page }, roomName) => {
   await page.waitForTimeout(1000);
 });
 
-Then('I should see an error message {string}', async ({ page }, message) => {
-  const roomSearchPage = new RoomSearchPage(page);
+Then('I should see an error message {string}', async ({ roomSearchPage }, message: string) => {
   const error = await roomSearchPage.getErrorMessage();
   expect(error).toContain(message);
 });
 
-Then('the booking summary should show a total price', async ({ page }) => {
-  const confirmationPage = new ConfirmationPage(page);
+Then('the booking summary should show a total price', async ({ confirmationPage }) => {
   const hasPrice = await confirmationPage.hasPriceDisplayed();
   expect(hasPrice).toBe(true);
 });
+

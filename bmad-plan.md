@@ -1,44 +1,70 @@
-# BMAD Plan: Refactor booking price test to click first room and check for any price display
+# BMAD Plan: Implement fixtures like resources folder and refactor all e2e from JS to TS
 
 ## Goal
-Change the booking price test scenario to click on the first room that appears (instead of selecting by price), then verify that a price is displayed in the confirmation page without checking for a specific dollar amount, using page object model methods instead of direct locators.
+Refactor all e2e tests from JavaScript to TypeScript, implementing fixtures following the pattern from the resources/playwright-bdd-example folder where fixtures.ts exports Given/When/Then using createBdd from playwright-bdd.
 
 ## Implementation Tasks
 
-### Task 1: Update booking_create.feature to remove price-specific selection
-- Modify the "@price" scenario in `tests/e2e/features/guest/booking_create.feature`:
-  - Change "I select a room with price" step to "I select a room card" (use the first room)
-  - Change the assertion step to check for any price display instead of specific "$360"
+### Task 1: Add TypeScript configuration and dependencies
+- Create `tests/e2e/tsconfig.json` based on the example in resources folder
+- Update `tests/e2e/package.json` to add TypeScript dependencies (@types/node, typescript)
+- Ensure TypeScript is configured for ES modules and strict mode
 - **Files to touch:**
-  - `tests/e2e/features/guest/booking_create.feature`
+  - `tests/e2e/tsconfig.json` (new file)
+  - `tests/e2e/package.json`
 
-### Task 2: Add method to RoomSearchPage to click first room card
-- Add method `clickFirstRoomCard()` to `RoomSearchPage.js` that:
-  - Gets all room cards using existing `getRoomCards()` method
-  - Clicks the first room card
-  - Waits for booking panel to appear
+### Task 2: Convert fixtures.js to fixtures.ts following resources pattern
+- Convert `tests/e2e/fixtures.js` to `tests/e2e/fixtures.ts`
+- Import `createBdd` from 'playwright-bdd' (not just test)
+- Export `Given, When, Then` from fixtures.ts using `createBdd(test)`
+- Add TypeScript types for fixtures
+- Convert page object imports to ES module syntax
 - **Files to touch:**
-  - `tests/e2e/pages/guest/RoomSearchPage.js`
+  - `tests/e2e/fixtures.ts` (rename from .js)
 
-### Task 3: Update booking_create.js step to use page object method for first room selection
-- Replace the "I select a room with price" step implementation to use `clickFirstRoomCard()` method from RoomSearchPage
-- Remove the price-specific selection logic
+### Task 3: Convert playwright.config.js to playwright.config.ts
+- Convert `tests/e2e/playwright.config.js` to `tests/e2e/playwright.config.ts`
+- Remove the `createRequire` workaround (no longer needed with TypeScript)
+- Remove `test` parameter from `defineBddConfig` (fixtures handle it via createBdd)
+- Update steps path to `steps/**/*.ts`
 - **Files to touch:**
-  - `tests/e2e/steps/guest/booking_create.js`
+  - `tests/e2e/playwright.config.ts` (rename from .js)
 
-### Task 4: Add method to ConfirmationPage to check if price exists
-- Add method `hasPriceDisplayed()` to `ConfirmationPage.js` that:
-  - Checks if total price element exists and has text content
-  - Returns boolean indicating if price is displayed (without checking specific value)
+### Task 4: Convert all step files from .js to .ts
+- Convert all 7 step files in `tests/e2e/steps/` from .js to .ts
+- Update imports to use ES module syntax
+- Import `Given, When, Then` from `../../fixtures` instead of calling `createBdd()`
+- Add TypeScript types for step parameters
 - **Files to touch:**
-  - `tests/e2e/pages/guest/ConfirmationPage.js`
+  - `tests/e2e/steps/guest/room_search.ts`
+  - `tests/e2e/steps/guest/booking_create.ts`
+  - `tests/e2e/steps/guest/auth_login.ts`
+  - `tests/e2e/steps/guest/my_bookings.ts`
+  - `tests/e2e/steps/admin/auth_login.ts`
+  - `tests/e2e/steps/admin/booking_overview.ts`
+  - `tests/e2e/steps/admin/room_manage.ts`
 
-### Task 5: Update booking_create.js assertion to check for any price display
-- Replace the "the booking summary should show a total price of" step implementation:
-  - Use `hasPriceDisplayed()` method from ConfirmationPage
-  - Assert that price is displayed (truthy check) instead of checking for specific dollar amount
+### Task 5: Convert page objects from .js to .ts
+- Convert all 9 page object files from .js to .ts
+- Add TypeScript types (Page type from @playwright/test, return types for methods)
+- Convert to ES module syntax (export default class)
 - **Files to touch:**
-  - `tests/e2e/steps/guest/booking_create.js`
+  - `tests/e2e/pages/guest/RoomSearchPage.ts`
+  - `tests/e2e/pages/guest/ConfirmationPage.ts`
+  - `tests/e2e/pages/guest/LoginPage.ts`
+  - `tests/e2e/pages/guest/DashboardPage.ts`
+  - `tests/e2e/pages/guest/MyBookingsPage.ts`
+  - `tests/e2e/pages/admin/AdminLoginPage.ts`
+  - `tests/e2e/pages/admin/AdminDashboardPage.ts`
+  - `tests/e2e/pages/admin/BookingOverviewPage.ts`
+  - `tests/e2e/pages/admin/RoomManagementPage.ts`
+
+### Task 6: Update fixtures.ts to import TypeScript page objects
+- Update fixtures.ts to use ES module imports for page objects
+- Ensure all imports use .ts extensions or no extensions (depending on tsconfig)
+- Verify fixture types are properly defined
+- **Files to touch:**
+  - `tests/e2e/fixtures.ts`
 
 ---
 

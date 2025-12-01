@@ -1,5 +1,28 @@
-class BookingOverviewPage {
-  constructor(page) {
+import type { Page, Locator } from '@playwright/test';
+
+interface BookingMeta {
+  id: string;
+  checkIn: string;
+  checkOut: string;
+  status: string;
+}
+
+interface BookingDateFilter {
+  checkIn?: string;
+  checkOut?: string;
+}
+
+export default class BookingOverviewPage {
+  readonly page: Page;
+  readonly filterFromInput: Locator;
+  readonly filterToInput: Locator;
+  readonly applyFilterButton: Locator;
+  readonly bookingList: Locator;
+  readonly checkInButton: Locator;
+  readonly checkOutButton: Locator;
+  readonly articleList: Locator;
+
+  constructor(page: Page) {
     this.page = page;
     this.filterFromInput = page.locator('input[name="filterFrom"]');
     this.filterToInput = page.locator('input[name="filterTo"]');
@@ -10,11 +33,11 @@ class BookingOverviewPage {
     this.articleList = page.locator('article');
   }
 
-  async goto() {
+  async goto(): Promise<void> {
     await this.page.goto('/admin/bookings');
   }
 
-  async waitForBookingList() {
+  async waitForBookingList(): Promise<void> {
     // Wait for either explicit .booking-item or generic article entries
     if (await this.bookingList.count() > 0) {
       await this.bookingList.first().waitFor({ state: 'visible' });
@@ -23,27 +46,27 @@ class BookingOverviewPage {
     }
   }
 
-  async filterBookings(fromDate, toDate) {
+  async filterBookings(fromDate: string, toDate: string): Promise<void> {
     await this.filterFromInput.fill(fromDate);
     await this.filterToInput.fill(toDate);
     await this.applyFilterButton.click();
   }
 
-  async markCheckedIn(bookingId) {
+  async markCheckedIn(bookingId: string): Promise<void> {
     const button = this.page.locator(`.booking-item[data-id="${bookingId}"] .check-in-button`);
     await button.click();
   }
 
-  async markCheckedOut(bookingId) {
+  async markCheckedOut(bookingId: string): Promise<void> {
     const button = this.page.locator(`.booking-item[data-id="${bookingId}"] .check-out-button`);
     await button.click();
   }
 
-  async getBookingList() {
+  async getBookingList(): Promise<Locator[]> {
     return await this.bookingList.all();
   }
 
-  async getBookingsMeta() {
+  async getBookingsMeta(): Promise<BookingMeta[]> {
     // Prefer .booking-item with data attributes; fallback to parsing article paragraphs
     if (await this.bookingList.count() > 0) {
       return await this.bookingList.evaluateAll((nodes) =>
@@ -77,7 +100,7 @@ class BookingOverviewPage {
     // Fallback: parse articles with paragraphs like "YYYY-MM-DD → YYYY-MM-DD"
     return await this.articleList.evaluateAll((nodes) =>
       nodes.map((node) => {
-        const normalize = (s) => (s || '').replace(/\u2011/g, '-').replace(/\u00a0/g, ' ').trim();
+        const normalize = (s: string | null | undefined): string => (s || '').replace(/\u2011/g, '-').replace(/\u00a0/g, ' ').trim();
         const text1 = normalize(node.querySelector('p')?.textContent || '');
         let checkIn = '';
         let checkOut = '';
@@ -97,8 +120,8 @@ class BookingOverviewPage {
     );
   }
 
-  async findBookingIdByDate({ checkIn, checkOut }) {
-    const normalize = (s) => (s || '').replace(/\u2011/g, '-').trim();
+  async findBookingIdByDate({ checkIn, checkOut }: BookingDateFilter): Promise<string | undefined> {
+    const normalize = (s: string | null | undefined): string => (s || '').replace(/\u2011/g, '-').trim();
     const targetIn = normalize(checkIn);
     const targetOut = normalize(checkOut);
     const bookings = await this.getBookingsMeta();
@@ -110,14 +133,13 @@ class BookingOverviewPage {
     return match?.id;
   }
 
-  async getStatusByBookingId(id) {
+  async getStatusByBookingId(id: string): Promise<string | null> {
     const statusElement = this.page.locator(`.booking-item[data-id="${id}"] .status`);
     return await statusElement.textContent();
   }
 
-  getStatusLocatorByBookingId(id) {
+  getStatusLocatorByBookingId(id: string): Locator {
     return this.page.locator(`.booking-item[data-id="${id}"] .status`);
   }
 }
 
-module.exports = BookingOverviewPage;

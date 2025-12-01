@@ -1,7 +1,18 @@
-const { expect } = require('@playwright/test');
+import type { Page, Locator } from '@playwright/test';
 
-class RoomManagementPage {
-  constructor(page) {
+export default class RoomManagementPage {
+  readonly page: Page;
+  readonly createRoomButton: Locator;
+  readonly roomNameInput: Locator;
+  readonly capacityInput: Locator;
+  readonly priceInput: Locator;
+  readonly saveButton: Locator;
+  readonly roomList: Locator;
+  readonly outOfOrderButton: Locator;
+  readonly deleteButton: Locator;
+  readonly errorMessage: Locator;
+
+  constructor(page: Page) {
     this.page = page;
     this.createRoomButton = page.locator('.create-room-button');
     this.roomNameInput = page.locator('input[name="roomName"]');
@@ -14,11 +25,11 @@ class RoomManagementPage {
     this.errorMessage = page.locator('.error-message');
   }
 
-  async goto() {
+  async goto(): Promise<void> {
     await this.page.goto('/admin/rooms');
   }
 
-  async createRoom(name, capacity, price) {
+  async createRoom(name: string, capacity: number, price: string): Promise<void> {
     await this.createRoomButton.click();
     await this.roomNameInput.fill(name);
     await this.capacityInput.fill(capacity.toString());
@@ -26,23 +37,22 @@ class RoomManagementPage {
     await this.saveButton.click();
   }
 
-  async markOutOfOrder(roomId) {
+  async markOutOfOrder(roomId: string): Promise<void> {
     const button = this.page.locator(`.room-item[data-id="${roomId}"] .out-of-order-button`);
     await button.click();
   }
 
-  async deleteRoom(roomId) {
+  async deleteRoom(roomId: string): Promise<void> {
     const button = this.page.locator(`.room-item[data-id="${roomId}"] .delete-button`);
     await button.click();
   }
 
-  async getErrorMessage() {
+  async getErrorMessage(): Promise<string | null> {
     return await this.errorMessage.textContent();
   }
 
-  async getRoomList() {
+  async getRoomList(): Promise<Locator[]> {
     return await this.roomList.all();
   }
 }
 
-module.exports = RoomManagementPage;

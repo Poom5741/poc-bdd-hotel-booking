@@ -37,16 +37,16 @@ services:
     ports:
       - "3000:80"
 
-  e2e:
-    build:
-      context: .
-      dockerfile: tests/e2e/Dockerfile
-    image: stayflex/e2e:local
-    depends_on:
-      - hotel-api
-    environment:
-      - BASE_URL=${BASE_URL:-http://host.docker.internal:3000}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    shm_size: 1g
-    entrypoint: ["npm", "test"]
+  # e2e:
+  #   build:
+  #     context: .
+  #     dockerfile: tests/e2e/Dockerfile
+  #   image: stayflex/e2e:local
+  #   depends_on:
+  #     - hotel-api
+  #   environment:
+  #     - BASE_URL=${BASE_URL:-http://host.docker.internal:3000}
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   shm_size: 1g
+  #   entrypoint: ["npm", "test"]

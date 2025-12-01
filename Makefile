@@ -19,8 +19,9 @@ seed-api: build-api
 build-e2e:
 	@docker build -t $(E2E_IMAGE) -f tests/e2e/Dockerfile .
 
-e2e: build-e2e
-	@docker run --rm -e BASE_URL=$(BASE_URL) --network host $(E2E_IMAGE)
+e2e:
+	@chmod +x e2e.sh
+	@./e2e.sh
 
 compose-up:
 	$(COMPOSE) up --build hotel-api guest-web admin-web web

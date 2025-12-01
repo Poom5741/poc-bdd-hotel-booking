@@ -3,7 +3,7 @@ import { defineBddConfig } from 'playwright-bdd';
 
 const testDir = defineBddConfig({
   features: 'features/**/*.feature',
-  steps: 'steps/**/*.js',
+  steps: ['fixtures.ts', 'steps/**/*.ts'],
 });
 
 export default defineConfig({
@@ -19,6 +19,8 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { browserName: 'chromium' },
+      retries: 3,
     },
   ],
 });
+

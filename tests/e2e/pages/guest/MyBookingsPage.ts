@@ -1,23 +1,35 @@
-class MyBookingsPage {
-  constructor(page) {
+import type { Page, Locator } from '@playwright/test';
+
+interface BookingMeta {
+  id: string;
+  status: string;
+  checkIn: string;
+}
+
+export default class MyBookingsPage {
+  readonly page: Page;
+  readonly bookingList: Locator;
+  readonly confirmationMessage: Locator;
+
+  constructor(page: Page) {
     this.page = page;
     this.bookingList = page.locator('.booking-item');
     this.confirmationMessage = page.locator('.confirmation-message');
   }
 
-  async goto() {
+  async goto(): Promise<void> {
     await this.page.goto('/my-bookings');
   }
 
-  async getBookingList() {
+  async getBookingList(): Promise<Locator[]> {
     return await this.bookingList.all();
   }
 
-  async waitForBookingList() {
+  async waitForBookingList(): Promise<void> {
     await this.bookingList.first().waitFor({ state: 'visible' });
   }
 
-  async getBookingsMeta() {
+  async getBookingsMeta(): Promise<BookingMeta[]> {
     return await this.bookingList.evaluateAll((nodes) =>
       nodes.map((node) => {
         const dataset = node.dataset || {};
@@ -41,37 +53,36 @@ class MyBookingsPage {
     );
   }
 
-  async findBookingIdByDate(checkIn) {
+  async findBookingIdByDate(checkIn: string): Promise<string | undefined> {
     const bookings = await this.getBookingsMeta();
     const match = bookings.find((booking) => booking.checkIn?.startsWith(checkIn));
     return match?.id;
   }
 
-  async cancelBookingById(id) {
+  async cancelBookingById(id: string): Promise<void> {
     const cancelButton = this.page.locator(`.booking-item[data-id="${id}"] .cancel-button`);
     await cancelButton.click();
   }
 
-  async getStatusByBookingId(id) {
+  async getStatusByBookingId(id: string): Promise<string | null> {
     const statusElement = this.page.locator(`.booking-item[data-id="${id}"] .status`);
     return await statusElement.textContent();
   }
 
-  getBookingLocatorById(id) {
+  getBookingLocatorById(id: string): Locator {
     return this.page.locator(`.booking-item[data-id="${id}"]`);
   }
 
-  async getConfirmationMessage() {
+  async getConfirmationMessage(): Promise<string | null> {
     return await this.confirmationMessage.textContent();
   }
 
-  getCancelButtonByBookingId(id) {
+  getCancelButtonByBookingId(id: string): Locator {
     return this.page.locator(`.booking-item[data-id="${id}"] .cancel-button`);
   }
 
-  getLabelByBookingId(id, labelText) {
+  getLabelByBookingId(id: string, labelText: string): Locator {
     return this.page.locator(`.booking-item[data-id="${id}"]`).getByText(labelText, { exact: false });
   }
 }
 
-module.exports = MyBookingsPage;

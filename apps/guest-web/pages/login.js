@@ -42,10 +42,15 @@ export default function Login() {
   return (
     <main className="page">
       <section className="card">
-        <h1 className="title">Login</h1>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <h1 className="title" style={{ marginBottom: '8px' }}>Welcome Back</h1>
+          <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+            Sign in to access your bookings and manage your stay
+          </p>
+        </div>
         <form onSubmit={handleSubmit} className="form">
           <label className="label">
-            Email
+            Email Address
             <input
               name="email"
               type="email"
@@ -54,6 +59,7 @@ export default function Login() {
               required
               className="input"
               placeholder="you@example.com"
+              autoComplete="email"
             />
           </label>
           <label className="label">
@@ -65,10 +71,11 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="input"
-              placeholder="••••••••"
+              placeholder="Enter your password"
+              autoComplete="current-password"
             />
           </label>
-          {error && <p className="error-message">{error}</p>}
+          {error && <p className="error-message" role="alert">{error}</p>}
           <button type="submit" className="submit-button" disabled={loading}>
             {loading ? 'Signing in…' : 'Sign in'}
           </button>

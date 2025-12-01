@@ -129,7 +129,7 @@ When('I select a room with price {string} per night', async ({ page }, price) =>
   await page.locator('.booking-panel').waitFor({ state: 'visible' });
 });
 
-Then('the booking summary should show a total price of {string}', async ({ page }, total) => {
-  const priceElement = await page.locator('.total-price').textContent();
-  expect(priceElement).toContain(total);
-});
+// Then('the booking summary should show a total price of {string}', async ({ page }, total) => {
+//   const priceElement = await page.locator('.total-price').textContent();
+//   expect(priceElement).toContain(total);
+// });

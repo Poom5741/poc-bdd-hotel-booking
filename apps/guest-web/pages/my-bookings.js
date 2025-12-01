@@ -40,11 +40,26 @@ export default function MyBookings() {
                 data-checkin={b.checkIn}
                 data-status={b.timelineStatus}
               >
-                <div>
-                  <p>
-                    {b.checkIn} → {b.checkOut}
+                <div style={{ flex: 1 }}>
+                  <div style={{ marginBottom: '8px' }}>
+                    <p style={{ margin: 0, fontSize: 'var(--font-size-base)', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                      {b.checkIn} → {b.checkOut}
+                    </p>
+                  </div>
+                  <p className="status" style={{ 
+                    margin: 0, 
+                    display: 'inline-block',
+                    padding: '4px 8px',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: 'var(--font-size-xs)',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    background: isPast ? 'var(--color-background-subtle)' : 'rgba(37, 99, 235, 0.1)',
+                    color: isPast ? 'var(--color-text-secondary)' : 'var(--color-primary)'
+                  }}>
+                    {b.timelineStatus}
                   </p>
-                  <p className="status">{b.timelineStatus}</p>
                 </div>
                 {!isPast && (
                   <button

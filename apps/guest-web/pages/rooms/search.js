@@ -151,13 +151,26 @@ export default function RoomSearch() {
                     setBookingMessage('');
                   }}
                 >
-                  <h3>{room.name}</h3>
-                  <p>{room.type}</p>
-                  <p>Capacity: {room.capacity}</p>
-                  <p>Price: ${room.displayPrice || room.basePrice}</p>
+                  <div style={{ marginBottom: '12px' }}>
+                    <h3 style={{ margin: '0 0 4px', fontSize: 'var(--font-size-xl)', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                      {room.name}
+                    </h3>
+                    <p style={{ margin: '0 0 8px', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+                      {room.type}
+                    </p>
+                  </div>
+                  <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                      <strong>Capacity:</strong> {room.capacity} {room.capacity === 1 ? 'guest' : 'guests'}
+                    </p>
+                    <p style={{ margin: 0, fontSize: 'var(--font-size-lg)', fontWeight: 700, color: 'var(--color-primary)' }}>
+                      ${room.displayPrice || room.basePrice} <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 400, color: 'var(--color-text-secondary)' }}>per night</span>
+                    </p>
+                  </div>
                   <button
                     type="button"
-                    className="submit-booking"
+                    className="submit-button"
+                    style={{ width: '100%', marginTop: 'auto' }}
                     onClick={async (e) => {
                       e.stopPropagation();
                       setSelectedRoom(room);
@@ -173,7 +186,7 @@ export default function RoomSearch() {
                       });
                     }}
                   >
-                    Book
+                    Book Now
                   </button>
                 </article>
               ))}
@@ -183,13 +196,21 @@ export default function RoomSearch() {
 
         {selectedRoom && (
           <div className="booking-panel">
-            <h2>Book Now</h2>
-            <p>
-              {checkIn} → {checkOut} · {bookingGuests} guest{bookingGuests !== 1 ? 's' : ''}
-            </p>
-            <p>Room: {selectedRoom.name}</p>
-            <p>Price per night: ${selectedRoom.displayPrice || selectedRoom.basePrice}</p>
-            {bookingMessage && <p className="error-message">{bookingMessage}</p>}
+            <h2 style={{ margin: '0 0 16px', fontSize: 'var(--font-size-xl)', fontWeight: 700 }}>
+              Complete Your Booking
+            </h2>
+            <div style={{ marginBottom: '20px', padding: '16px', background: 'var(--color-background)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+              <p style={{ margin: '0 0 8px', fontSize: 'var(--font-size-base)', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                {selectedRoom.name}
+              </p>
+              <p style={{ margin: '0 0 8px', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                {checkIn} → {checkOut} · {bookingGuests} guest{bookingGuests !== 1 ? 's' : ''}
+              </p>
+              <p style={{ margin: 0, fontSize: 'var(--font-size-base)', fontWeight: 600, color: 'var(--color-primary)' }}>
+                ${selectedRoom.displayPrice || selectedRoom.basePrice} per night
+              </p>
+            </div>
+            {bookingMessage && <p className="error-message" style={{ marginBottom: '16px' }}>{bookingMessage}</p>}
             <label className="label">
               Number of Guests
               <input
@@ -203,7 +224,8 @@ export default function RoomSearch() {
             </label>
             <button
               type="button"
-              className="confirm-booking-button"
+              className="submit-button"
+              style={{ width: '100%', marginTop: '8px' }}
               onClick={async () =>
                 handleBooking({
                   room: selectedRoom,
@@ -217,7 +239,7 @@ export default function RoomSearch() {
               }
               disabled={bookingLoading}
             >
-              {bookingLoading ? 'Booking…' : 'Confirm Booking'}
+              {bookingLoading ? 'Processing…' : 'Confirm Booking'}
             </button>
           </div>
         )}

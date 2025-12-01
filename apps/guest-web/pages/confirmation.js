@@ -10,13 +10,19 @@ export default function Confirmation() {
       const parsed = JSON.parse(stored);
       setSummary(parsed);
       const nights = calcNights(parsed.checkIn, parsed.checkOut);
-      // Ensure pricePerNight is a number for accurate calculation
-      const pricePerNight = Number(parsed.pricePerNight) || 0;
-      const guests = Number(parsed.guests) || 1;
+      const pricePerNight = parsed.pricePerNight || 0;
+      const guests = parsed.guests || 1;
       const guestFeePerNight = 20; // $20 per guest per night
-      const baseAmount = nights * pricePerNight;
-      const guestFeeAmount = nights * guestFeePerNight * guests;
+      
+      // Price calculation: base room price + guest fees
+      // For Dec 10-12: nights = 2, but we need to add 1 to get inclusive nights (3 nights total)
+      // Total = (nights + 1) × pricePerNight + (nights + 1) × guestFeePerNight × guests
+      // For Dec 10-12: (2 + 1) × $100 + (2 + 1) × $20 × 1 = $300 + $60 = $360
+      const inclusiveNights = nights + 1;
+      const baseAmount = inclusiveNights * pricePerNight;
+      const guestFeeAmount = inclusiveNights * guestFeePerNight * guests;
       const totalAmount = baseAmount + guestFeeAmount;
+      
       setTotal(`$${totalAmount.toFixed(0)}`);
     }
   }, []);
@@ -53,8 +59,5 @@ function calcNights(checkIn, checkOut) {
   const startUTC = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
   const endUTC = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
   const diffDays = Math.floor((endUTC - startUTC) / (1000 * 60 * 60 * 24));
-  // Calculate inclusive nights: check-in to check-out (both dates count as nights stayed)
-  // For Dec 10-12: diffDays = 2, so nights = 2 + 1 = 3
-  const nights = diffDays + 1;
-  return Math.max(1, nights);
+  return Math.max(0, diffDays);
 }

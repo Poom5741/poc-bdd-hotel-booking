@@ -51,10 +51,15 @@ export default function AdminLogin() {
   return (
     <main className="page">
       <section className="card">
-        <h1 className="title">Admin Login</h1>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <h1 className="title" style={{ marginBottom: '8px' }}>Admin Portal</h1>
+          <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+            Sign in to manage your hotel operations
+          </p>
+        </div>
         <form onSubmit={handleSubmit} className="form">
           <label className="label">
-            Email
+            Email Address
             <input
               name="email"
               type="email"
@@ -62,7 +67,8 @@ export default function AdminLogin() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="input"
-              placeholder="admin@example.com"
+              placeholder="admin@stayflex.com"
+              autoComplete="email"
             />
           </label>
           <label className="label">
@@ -74,12 +80,13 @@ export default function AdminLogin() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="input"
-              placeholder="••••••••"
+              placeholder="Enter your password"
+              autoComplete="current-password"
             />
           </label>
-          {error && <p className="error-message">{error}</p>}
+          {error && <p className="error-message" role="alert">{error}</p>}
           <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? 'Signing in…' : 'Sign in to Admin Portal'}
           </button>
         </form>
       </section>

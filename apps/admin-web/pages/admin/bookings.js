@@ -147,65 +147,114 @@ export default function AdminBookings() {
           </p>
         )}
 
-        <div className="filters">
-          <input
-            name="filterFrom"
-            className="input"
-            placeholder="From (YYYY-MM-DD)"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-          />
-          <input
-            name="filterTo"
-            className="input"
-            placeholder="To (YYYY-MM-DD)"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-          />
-          <button
-            className="apply-filter-button submit-button"
-            type="button"
-            onClick={handleFilter}
-            disabled={loading}
-          >
-            {loading ? 'Filtering…' : 'Apply'}
-          </button>
+        <div style={{
+          background: 'var(--color-background-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '20px',
+          marginBottom: '24px',
+          border: '1px solid var(--color-border)'
+        }}>
+          <h2 style={{ margin: '0 0 16px', fontSize: 'var(--font-size-lg)', fontWeight: 700 }}>
+            Filter Bookings
+          </h2>
+          <div className="filters">
+            <label className="label" style={{ flex: 1, minWidth: '180px' }}>
+              From Date
+              <input
+                name="filterFrom"
+                type="date"
+                className="input"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+              />
+            </label>
+            <label className="label" style={{ flex: 1, minWidth: '180px' }}>
+              To Date
+              <input
+                name="filterTo"
+                type="date"
+                className="input"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+              />
+            </label>
+            <button
+              className="submit-button"
+              type="button"
+              onClick={handleFilter}
+              disabled={loading}
+              style={{ alignSelf: 'flex-end', minWidth: '120px' }}
+            >
+              {loading ? 'Filtering…' : 'Apply Filter'}
+            </button>
+          </div>
         </div>
 
-        <div className="booking-list">
-          {bookings.map((b) => (
-            <article
-              key={b.id}
-              className="booking-item"
-              data-id={b.id}
-              data-checkin={b.checkIn}
-              data-checkout={b.checkOut}
-              data-status={b.status}
-            >
-              <div>
-                <p>
-                  {b.checkIn} → {b.checkOut}
-                </p>
-                <p className="status">{b.status}</p>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  type="button"
-                  className="check-in-button"
-                  onClick={() => handleCheckIn(b.id, b.checkIn)}
+        <div style={{ marginTop: '8px' }}>
+          <h2 style={{ margin: '0 0 16px', fontSize: 'var(--font-size-lg)', fontWeight: 700 }}>
+            Bookings ({bookings.length})
+          </h2>
+          <div className="booking-list">
+            {bookings.map((b) => {
+              const statusColor = b.status === 'Checked-out' ? '#059669' : 
+                                  b.status === 'Checked-in' ? '#2563eb' : 
+                                  '#64748b';
+              const statusBg = b.status === 'Checked-out' ? '#d1fae5' : 
+                              b.status === 'Checked-in' ? '#dbeafe' : 
+                              '#f1f5f9';
+              return (
+                <article
+                  key={b.id}
+                  className="booking-item"
+                  data-id={b.id}
+                  data-checkin={b.checkIn}
+                  data-checkout={b.checkOut}
+                  data-status={b.status}
                 >
-                  Check in
-                </button>
-                <button
-                  type="button"
-                  className="check-out-button"
-                  onClick={() => handleCheckOut(b.id, b.checkOut)}
-                >
-                  Check out
-                </button>
-              </div>
-            </article>
-          ))}
+                  <div style={{ flex: 1 }}>
+                    <p style={{ margin: '0 0 8px', fontSize: 'var(--font-size-base)', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                      {b.checkIn} → {b.checkOut}
+                    </p>
+                    {b.roomId && (
+                      <p style={{ margin: '0 0 8px', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                        Room: {b.roomId.replace(/^room-/, '')}
+                      </p>
+                    )}
+                    <p className="status" style={{
+                      margin: 0,
+                      display: 'inline-block',
+                      padding: '4px 10px',
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: 'var(--font-size-xs)',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      background: statusBg,
+                      color: statusColor
+                    }}>
+                      {b.status}
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className="check-in-button"
+                      onClick={() => handleCheckIn(b.id, b.checkIn)}
+                    >
+                      Check In
+                    </button>
+                    <button
+                      type="button"
+                      className="check-out-button"
+                      onClick={() => handleCheckOut(b.id, b.checkOut)}
+                    >
+                      Check Out
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </div>
       </section>
     </main>

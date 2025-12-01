@@ -148,86 +148,121 @@ export default function AdminRooms() {
         <h1 className="title">Room Management</h1>
         {error && <p className="error-message" role="alert" aria-live="polite">{error}</p>}
 
-        <button className="create-room-button" type="button" onClick={() => {}}>
-          Create Room
-        </button>
+        <div style={{ 
+          background: 'var(--color-background-subtle)', 
+          borderRadius: 'var(--radius-lg)', 
+          padding: '24px', 
+          marginBottom: '24px',
+          border: '1px solid var(--color-border)'
+        }}>
+          <h2 style={{ margin: '0 0 16px', fontSize: 'var(--font-size-lg)', fontWeight: 700 }}>
+            Create New Room
+          </h2>
+          <form className="form" onSubmit={handleCreate}>
+            <div className="grid">
+              <label className="label">
+                Room Name
+                <input
+                  name="roomName"
+                  className="input"
+                  value={roomName}
+                  onChange={(e) => setRoomName(e.target.value)}
+                  required
+                  placeholder="Standard 105"
+                />
+              </label>
+              <label className="label">
+                Capacity
+                <input
+                  name="capacity"
+                  className="input"
+                  type="number"
+                  min="1"
+                  value={capacity}
+                  onChange={(e) => setCapacity(e.target.value)}
+                  required
+                />
+              </label>
+              <label className="label">
+                Base Price
+                <input
+                  name="price"
+                  className="input"
+                  type="text"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="$120"
+                  required
+                />
+              </label>
+            </div>
+            <button type="submit" className="submit-button" disabled={loading} style={{ maxWidth: '200px' }}>
+              {loading ? 'Saving…' : 'Save Room'}
+            </button>
+          </form>
+        </div>
 
-        <form className="form" onSubmit={handleCreate} style={{ marginTop: 12 }}>
-          <div className="grid">
-            <label className="label">
-              Room Name
-              <input
-                name="roomName"
-                className="input"
-                value={roomName}
-                onChange={(e) => setRoomName(e.target.value)}
-                required
-                placeholder="Standard 105"
-              />
-            </label>
-            <label className="label">
-              Capacity
-              <input
-                name="capacity"
-                className="input"
-                type="number"
-                min="1"
-                value={capacity}
-                onChange={(e) => setCapacity(e.target.value)}
-                required
-              />
-            </label>
-            <label className="label">
-              Base Price
-              <input
-                name="price"
-                className="input"
-                type="text"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="$120"
-                required
-              />
-            </label>
+        <div style={{ marginTop: '24px' }}>
+          <h2 style={{ margin: '0 0 16px', fontSize: 'var(--font-size-lg)', fontWeight: 700 }}>
+            All Rooms ({rooms.length})
+          </h2>
+          <div className="booking-list">
+            {rooms.map((room) => (
+              <article
+                key={room.id}
+                className="booking-item"
+                data-id={room.displayId}
+                data-status={room.status}
+              >
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ margin: '0 0 8px', fontSize: 'var(--font-size-base)', fontWeight: 700 }}>
+                    {room.name}
+                  </h3>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                      <strong>Type:</strong> {room.type}
+                    </span>
+                    <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                      <strong>Capacity:</strong> {room.capacity}
+                    </span>
+                    <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                      <strong>Price:</strong> ${room.basePrice}
+                    </span>
+                  </div>
+                  <p className="status" style={{
+                    margin: 0,
+                    display: 'inline-block',
+                    padding: '4px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: 'var(--font-size-xs)',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    background: room.status === 'out_of_order' ? '#fee2e2' : '#d1fae5',
+                    color: room.status === 'out_of_order' ? '#b91c1c' : '#059669'
+                  }}>
+                    {room.status === 'out_of_order' ? 'OUT OF ORDER' : 'AVAILABLE'}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button
+                    className="check-in-button"
+                    type="button"
+                    onClick={() => toggleOutOfOrder(room.id)}
+                  >
+                    {room.status === 'out_of_order' ? 'Mark Available' : 'Mark Out of Order'}
+                  </button>
+                  <button
+                    className="delete-button cancel-button"
+                    type="button"
+                    onClick={() => handleDelete(room.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </article>
+            ))}
           </div>
-          <button type="submit" className="save-button" disabled={loading}>
-            {loading ? 'Saving…' : 'Save Room'}
-          </button>
-        </form>
-
-        <div className="room-list" style={{ marginTop: 20 }}>
-          {rooms.map((room) => (
-            <article
-              key={room.id}
-              className="room-item"
-              data-id={room.displayId}
-              data-status={room.status}
-            >
-              <div>
-                <h3>{room.name}</h3>
-                <p>
-                  Type: {room.type} · Capacity: {room.capacity} · Price: ${room.basePrice}
-                </p>
-                <p>Status: {room.status === 'out_of_order' ? 'OUT_OF_ORDER' : 'AVAILABLE'}</p>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  className="out-of-order-button"
-                  type="button"
-                  onClick={() => toggleOutOfOrder(room.id)}
-                >
-                  {room.status === 'out_of_order' ? 'Mark Available' : 'Mark Out of Order'}
-                </button>
-                <button
-                  className="delete-button"
-                  type="button"
-                  onClick={() => handleDelete(room.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </article>
-          ))}
         </div>
       </section>
     </main>

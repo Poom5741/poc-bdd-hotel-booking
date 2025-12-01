@@ -67,8 +67,10 @@ When('I navigate to {string}', async ({ page }, path: string) => {
   await page.goto(path);
 });
 
-Then('I should see a login prompt', async ({ page }) => {
-  const loginHeader = page.getByText(/login/i);
-  await expect(loginHeader).toBeVisible();
+Then('I should see a login prompt', async ({ loginPage }) => {
+  // Verify login form is visible by checking for email input and submit button
+  // This is more reliable than searching for text that may not exist in the UI
+  await expect(loginPage.emailInput).toBeVisible();
+  await expect(loginPage.submitButton).toBeVisible();
 });
 

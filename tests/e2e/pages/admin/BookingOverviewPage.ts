@@ -26,7 +26,9 @@ export default class BookingOverviewPage {
     this.page = page;
     this.filterFromInput = page.locator('input[name="filterFrom"]');
     this.filterToInput = page.locator('input[name="filterTo"]');
-    this.applyFilterButton = page.locator('.apply-filter-button');
+    // HTML uses .submit-button with text "Apply Filter", not .apply-filter-button
+    // Scope to the filter section to avoid matching other submit buttons
+    this.applyFilterButton = page.locator('.filters button.submit-button').filter({ hasText: 'Apply Filter' });
     this.bookingList = page.locator('.booking-item');
     this.checkInButton = page.locator('.check-in-button');
     this.checkOutButton = page.locator('.check-out-button');

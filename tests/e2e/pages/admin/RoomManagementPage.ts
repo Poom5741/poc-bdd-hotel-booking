@@ -2,7 +2,6 @@ import type { Page, Locator } from '@playwright/test';
 
 export default class RoomManagementPage {
   readonly page: Page;
-  readonly createRoomButton: Locator;
   readonly roomNameInput: Locator;
   readonly capacityInput: Locator;
   readonly priceInput: Locator;
@@ -14,15 +13,19 @@ export default class RoomManagementPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.createRoomButton = page.locator('.create-room-button');
     this.roomNameInput = page.locator('input[name="roomName"]');
     this.capacityInput = page.locator('input[name="capacity"]');
     this.priceInput = page.locator('input[name="price"]');
-    this.saveButton = page.locator('.save-button');
-    this.roomList = page.locator('.room-item');
-    this.outOfOrderButton = page.locator('.out-of-order-button');
+    // The submit button has class "submit-button" and text "Save Room"
+    this.saveButton = page.locator('form button[type="submit"]').filter({ hasText: 'Save Room' });
+    // HTML uses .booking-item, not .room-item
+    this.roomList = page.locator('.booking-item');
+    // HTML uses .check-in-button for the "Mark Out of Order" button, not .out-of-order-button
+    this.outOfOrderButton = page.locator('.check-in-button');
     this.deleteButton = page.locator('.delete-button');
-    this.errorMessage = page.locator('.error-message');
+    // Scope to main content to avoid matching Next.js route announcer (which is outside main)
+    // Error messages in rooms.js have role="alert", so we use that for specificity
+    this.errorMessage = page.locator('main .error-message[role="alert"]').first();
   }
 
   async goto(): Promise<void> {
@@ -30,25 +33,46 @@ export default class RoomManagementPage {
   }
 
   async createRoom(name: string, capacity: number, price: string): Promise<void> {
-    await this.createRoomButton.click();
+    // Form is always visible, no need to click a "create" button
     await this.roomNameInput.fill(name);
     await this.capacityInput.fill(capacity.toString());
     await this.priceInput.fill(price);
+    // Wait for button to be visible
+    await this.saveButton.waitFor({ state: 'visible' });
+    // Wait for button to be enabled (retry if disabled)
+    let retries = 10;
+    while (retries > 0 && (await this.saveButton.isDisabled())) {
+      await this.page.waitForTimeout(100);
+      retries--;
+    }
     await this.saveButton.click();
   }
 
   async markOutOfOrder(roomId: string): Promise<void> {
-    const button = this.page.locator(`.room-item[data-id="${roomId}"] .out-of-order-button`);
+    // Normalize roomId: HTML uses displayId (e.g., "102" not "room-102")
+    const normalizedId = roomId.startsWith('room-') ? roomId.replace('room-', '') : roomId;
+    // HTML uses .booking-item (not .room-item) and .check-in-button (not .out-of-order-button)
+    const button = this.page.locator(`.booking-item[data-id="${normalizedId}"] .check-in-button`);
     await button.click();
   }
 
   async deleteRoom(roomId: string): Promise<void> {
-    const button = this.page.locator(`.room-item[data-id="${roomId}"] .delete-button`);
+    // Normalize roomId: HTML uses displayId (e.g., "102" not "room-102")
+    const normalizedId = roomId.startsWith('room-') ? roomId.replace('room-', '') : roomId;
+    // HTML uses .booking-item (not .room-item)
+    const button = this.page.locator(`.booking-item[data-id="${normalizedId}"] .delete-button`);
     await button.click();
   }
 
   async getErrorMessage(): Promise<string | null> {
-    return await this.errorMessage.textContent();
+    // Wait for error message to be visible before getting text
+    try {
+      await this.errorMessage.waitFor({ state: 'visible', timeout: 2000 });
+      return await this.errorMessage.textContent();
+    } catch {
+      // If error message doesn't appear, return null
+      return null;
+    }
   }
 
   async getRoomList(): Promise<Locator[]> {

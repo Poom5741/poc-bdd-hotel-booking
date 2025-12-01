@@ -155,3 +155,5 @@ playwright/.cache/
 # Local development
 .local
 *.local
+
+tests/e2e/cucumber-report/

@@ -26,12 +26,31 @@ export default class ConfirmationPage {
   }
 
   async hasPriceDisplayed(): Promise<boolean> {
-    const count = await this.totalPrice.count();
-    if (count === 0) {
+    try {
+      // Wait for element to be visible (ensures React has rendered the summary section)
+      await this.totalPrice.waitFor({ state: 'visible', timeout: 5000 });
+      
+      // Wait for price to be calculated (contains $ and digits)
+      // This ensures useEffect has completed and the price has been calculated
+      await this.page.waitForFunction(
+        (selector) => {
+          const el = document.querySelector(selector);
+          if (!el) return false;
+          const text = el.textContent || '';
+          // Check if text contains price pattern: $ followed by one or more digits
+          return /\$\d+/.test(text);
+        },
+        '.total-price',
+        { timeout: 5000 }
+      );
+      
+      // Double-check by getting text content to verify price is actually displayed
+      const text = await this.totalPrice.textContent();
+      return text !== null && /\$\d+/.test(text);
+    } catch {
+      // If element doesn't exist or price pattern doesn't appear, return false
       return false;
     }
-    const text = await this.totalPrice.textContent();
-    return text !== null && text.trim().length > 0;
   }
 
   async getBookingSummary(): Promise<string | null> {

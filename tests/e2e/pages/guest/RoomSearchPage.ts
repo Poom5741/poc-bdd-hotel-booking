@@ -24,8 +24,12 @@ export default class RoomSearchPage {
     this.noRoomsMessage = page.locator('.no-rooms-message');
     this.bookingPanel = page.locator('.booking-panel');
     this.bookingGuestsInput = page.locator('input[name="bookingGuests"]');
-    this.confirmBookingButton = page.locator('.confirm-booking-button');
-    this.errorMessage = page.locator('.error-message');
+    // HTML uses .submit-button (not .confirm-booking-button), scoped to .booking-panel
+    this.confirmBookingButton = page.locator('.booking-panel button.submit-button').filter({ hasText: 'Confirm Booking' });
+    // Scope to main content to avoid matching Next.js route announcer (which is outside main)
+    // We'll handle both booking panel and form errors in getErrorMessage() method
+    // This locator is a fallback - the getErrorMessage method will check both locations
+    this.errorMessage = page.locator('main .error-message').first();
     this.validationError = page.locator('.validation-error');
   }
 
@@ -95,7 +99,34 @@ export default class RoomSearchPage {
   }
 
   async getErrorMessage(): Promise<string | null> {
-    return await this.errorMessage.textContent();
+    // Wait for error message to be visible before getting text
+    // Check all possible error locations: booking panel, form, results (for injected errors), and fallback
+    const selectors = [
+      'main .booking-panel .error-message',  // Booking errors (most common)
+      'main form .error-message',            // Form validation errors
+      'main .results .error-message',         // Injected errors when room doesn't appear
+      'main .error-message'                   // Fallback for any error in main
+    ];
+    
+    // Check each selector sequentially with longer timeout
+    // This is more reliable than Promise.race which can resolve too early
+    for (const selector of selectors) {
+      try {
+        const locator = this.page.locator(selector).first();
+        // Wait for error to appear with longer timeout (5 seconds)
+        await locator.waitFor({ state: 'visible', timeout: 5000 });
+        const text = await locator.textContent();
+        if (text && text.trim()) {
+          return text.trim();
+        }
+      } catch {
+        // Continue to next selector if this one doesn't find an error
+        continue;
+      }
+    }
+    
+    // No error message found in any location
+    return null;
   }
 
   async getValidationError(): Promise<string | null> {

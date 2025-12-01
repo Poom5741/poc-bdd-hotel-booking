@@ -45,6 +45,8 @@ When('I attempt to delete room {string}', async ({ roomManagementPage }, roomId:
 Then('I should see an error room message {string}', async ({ roomManagementPage }, message: string) => {
   // waits for the alert rendered by handleDelete('room-102')
   // Use page object's errorMessage locator to avoid matching Next.js route announcer
+  // Wait for error message to be visible first
+  await roomManagementPage.errorMessage.waitFor({ state: 'visible', timeout: 5000 });
   await expect(roomManagementPage.errorMessage).toHaveText(message);
 });
 

@@ -51,7 +51,9 @@ When('I attempt to delete room {string}', async ({ page }, roomId) => {
 
 Then('I should see an error room message {string}', async ({ page }, message) => {
   // waits for the alert rendered by handleDelete('room-102')
-  await expect(page.getByRole('alert')).toHaveText(message);
+  // Use page object's errorMessage locator to avoid matching Next.js route announcer
+  const roomManagementPage = new RoomManagementPage(page);
+  await expect(roomManagementPage.errorMessage).toHaveText(message);
 });
 
 Then('the room should remain in the system', async ({}) => {

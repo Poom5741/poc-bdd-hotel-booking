@@ -99,5 +99,7 @@ Then('I should not see a cancel option', async ({ page }) => {
 });
 
 Then('I should see a label {string}', async ({ page }, label) => {
-  await expect(page.getByText(label, { exact: false })).toBeVisible();
+  const bookingId = scenarioState.selectedBookingId;
+  const labelLocator = page.locator(`.booking-item[data-id="${bookingId}"]`).getByText(label, { exact: false });
+  await expect(labelLocator).toBeVisible();
 });

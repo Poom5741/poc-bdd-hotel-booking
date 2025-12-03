@@ -1,4 +1,5 @@
 import type { Page, Locator } from '@playwright/test';
+import { step } from '../../utilities/step-decorator';
 
 export default class ConfirmationPage {
   readonly page: Page;
@@ -13,18 +14,22 @@ export default class ConfirmationPage {
     this.summary = page.locator('.summary');
   }
 
+  @step("Navigate to confirmation page")
   async goto(): Promise<void> {
     await this.page.goto('/confirmation');
   }
 
+  @step("Get confirmation message")
   async getConfirmationMessage(): Promise<string | null> {
     return await this.confirmationMessage.textContent();
   }
 
+  @step("Get total price from confirmation")
   async getTotalPrice(): Promise<string | null> {
     return await this.totalPrice.textContent();
   }
 
+  @step("Check if price is displayed")
   async hasPriceDisplayed(): Promise<boolean> {
     try {
       // Wait for element to be visible (ensures React has rendered the summary section)
@@ -53,16 +58,19 @@ export default class ConfirmationPage {
     }
   }
 
+  @step("Get booking summary")
   async getBookingSummary(): Promise<string | null> {
     const summaryText = await this.summary.textContent();
     return summaryText;
   }
 
+  @step("Get dates from booking summary")
   async getDates(): Promise<string | null> {
     const datesText = await this.summary.locator('p').filter({ hasText: 'Dates:' }).textContent();
     return datesText;
   }
 
+  @step("Get guests from booking summary")
   async getGuests(): Promise<string | null> {
     const guestsText = await this.summary.locator('p').filter({ hasText: 'Guests:' }).textContent();
     return guestsText;

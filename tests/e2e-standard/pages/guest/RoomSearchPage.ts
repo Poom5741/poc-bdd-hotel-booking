@@ -1,4 +1,5 @@
 import type { Page, Locator } from '@playwright/test';
+import { step } from '../../utilities/step-decorator';
 
 export default class RoomSearchPage {
   readonly page: Page;
@@ -33,30 +34,37 @@ export default class RoomSearchPage {
     this.validationError = page.locator('.validation-error');
   }
 
+  @step("Navigate to room search page")
   async goto(): Promise<void> {
     await this.page.goto('/search');
   }
 
+  @step("Set check-in date: {date}")
   async setCheckIn(date: string): Promise<void> {
     await this.checkInInput.fill(date);
   }
 
+  @step("Set check-out date: {date}")
   async setCheckOut(date: string): Promise<void> {
     await this.checkOutInput.fill(date);
   }
 
+  @step("Set guests count: {count}")
   async setGuests(count: number): Promise<void> {
     await this.guestsInput.fill(count.toString());
   }
 
+  @step("Submit room search")
   async submitSearch(): Promise<void> {
     await this.submitButton.click();
   }
 
+  @step("Get room cards from search results")
   async getRoomCards(): Promise<Locator[]> {
     return await this.roomCards.all();
   }
 
+  @step("Click first room card")
   async clickFirstRoomCard(): Promise<void> {
     const roomCards = await this.getRoomCards();
     if (roomCards.length === 0) {
@@ -66,18 +74,22 @@ export default class RoomSearchPage {
     await this.waitForBookingPanel();
   }
 
+  @step("Get no rooms message")
   async getNoRoomsMessage(): Promise<string | null> {
     return await this.noRoomsMessage.textContent();
   }
 
+  @step("Wait for booking panel to appear")
   async waitForBookingPanel(): Promise<void> {
     await this.bookingPanel.waitFor({ state: 'visible' });
   }
 
+  @step("Fill booking guests: {count}")
   async fillBookingGuests(count: string): Promise<void> {
     await this.bookingGuestsInput.fill(count);
   }
 
+  @step("Click confirm booking button")
   async clickConfirmBooking(): Promise<void> {
     await this.confirmBookingButton.click();
   }
@@ -94,10 +106,12 @@ export default class RoomSearchPage {
     return this.page.locator('.room-card').filter({ hasText: name }).first();
   }
 
+  @step("Get room card count by name: {name}")
   async getRoomCardCountByName(name: string): Promise<number> {
     return await this.page.locator('.room-card').filter({ hasText: name }).count();
   }
 
+  @step("Get error message from room search")
   async getErrorMessage(): Promise<string | null> {
     // Wait for error message to be visible before getting text
     // Check all possible error locations: booking panel, form, results (for injected errors), and fallback
@@ -129,6 +143,7 @@ export default class RoomSearchPage {
     return null;
   }
 
+  @step("Get validation error message")
   async getValidationError(): Promise<string | null> {
     return await this.validationError.textContent();
   }

@@ -1,70 +1,45 @@
-# BMAD Plan: Implement fixtures like resources folder and refactor all e2e from JS to TS
+# BMAD Plan: Update e2e-standard to use test decorators like resource repo
 
 ## Goal
-Refactor all e2e tests from JavaScript to TypeScript, implementing fixtures following the pattern from the resources/playwright-bdd-example folder where fixtures.ts exports Given/When/Then using createBdd from playwright-bdd.
+Update the e2e-standard test folder to use the `@step` test decorator pattern from the playwright-ts-automation-framework resource repo, which wraps page object methods with `test.step()` for improved test reporting and traceability.
 
 ## Implementation Tasks
 
-### Task 1: Add TypeScript configuration and dependencies
-- Create `tests/e2e/tsconfig.json` based on the example in resources folder
-- Update `tests/e2e/package.json` to add TypeScript dependencies (@types/node, typescript)
-- Ensure TypeScript is configured for ES modules and strict mode
+### Task 1: Copy step-decorator utility to e2e-standard
+- Create `tests/e2e-standard/utilities/` directory
+- Copy `step-decorator.ts` from `resources/playwright-ts-automation-framework/utilities/step-decorator.ts` to `tests/e2e-standard/utilities/step-decorator.ts`
+- Verify the decorator imports and exports are correct
 - **Files to touch:**
-  - `tests/e2e/tsconfig.json` (new file)
-  - `tests/e2e/package.json`
+  - `tests/e2e-standard/utilities/step-decorator.ts` (new file)
 
-### Task 2: Convert fixtures.js to fixtures.ts following resources pattern
-- Convert `tests/e2e/fixtures.js` to `tests/e2e/fixtures.ts`
-- Import `createBdd` from 'playwright-bdd' (not just test)
-- Export `Given, When, Then` from fixtures.ts using `createBdd(test)`
-- Add TypeScript types for fixtures
-- Convert page object imports to ES module syntax
+### Task 2: Add @step decorator to guest page objects
+- Update all guest page object classes to import and use the `@step` decorator on their async methods
+- Add descriptive step names with placeholders for parameters (e.g., `@step("Navigate to login page")`, `@step("Fill email: {email}")`)
+- Apply decorator to methods in: LoginPage, DashboardPage, RoomSearchPage, ConfirmationPage, MyBookingsPage
 - **Files to touch:**
-  - `tests/e2e/fixtures.ts` (rename from .js)
+  - `tests/e2e-standard/pages/guest/LoginPage.ts`
+  - `tests/e2e-standard/pages/guest/DashboardPage.ts`
+  - `tests/e2e-standard/pages/guest/RoomSearchPage.ts`
+  - `tests/e2e-standard/pages/guest/ConfirmationPage.ts`
+  - `tests/e2e-standard/pages/guest/MyBookingsPage.ts`
 
-### Task 3: Convert playwright.config.js to playwright.config.ts
-- Convert `tests/e2e/playwright.config.js` to `tests/e2e/playwright.config.ts`
-- Remove the `createRequire` workaround (no longer needed with TypeScript)
-- Remove `test` parameter from `defineBddConfig` (fixtures handle it via createBdd)
-- Update steps path to `steps/**/*.ts`
+### Task 3: Add @step decorator to admin page objects
+- Update all admin page object classes to import and use the `@step` decorator on their async methods
+- Add descriptive step names with placeholders for parameters
+- Apply decorator to methods in: AdminLoginPage, AdminDashboardPage, BookingOverviewPage, RoomManagementPage
 - **Files to touch:**
-  - `tests/e2e/playwright.config.ts` (rename from .js)
+  - `tests/e2e-standard/pages/admin/AdminLoginPage.ts`
+  - `tests/e2e-standard/pages/admin/AdminDashboardPage.ts`
+  - `tests/e2e-standard/pages/admin/BookingOverviewPage.ts`
+  - `tests/e2e-standard/pages/admin/RoomManagementPage.ts`
 
-### Task 4: Convert all step files from .js to .ts
-- Convert all 7 step files in `tests/e2e/steps/` from .js to .ts
-- Update imports to use ES module syntax
-- Import `Given, When, Then` from `../../fixtures` instead of calling `createBdd()`
-- Add TypeScript types for step parameters
+### Task 4: Verify test execution and reporting
+- Run a sample test to verify the decorator works correctly
+- Check that test steps appear in Playwright test reports with proper names
+- Ensure no TypeScript compilation errors
+- Verify that all existing tests still pass with the new decorators
 - **Files to touch:**
-  - `tests/e2e/steps/guest/room_search.ts`
-  - `tests/e2e/steps/guest/booking_create.ts`
-  - `tests/e2e/steps/guest/auth_login.ts`
-  - `tests/e2e/steps/guest/my_bookings.ts`
-  - `tests/e2e/steps/admin/auth_login.ts`
-  - `tests/e2e/steps/admin/booking_overview.ts`
-  - `tests/e2e/steps/admin/room_manage.ts`
-
-### Task 5: Convert page objects from .js to .ts
-- Convert all 9 page object files from .js to .ts
-- Add TypeScript types (Page type from @playwright/test, return types for methods)
-- Convert to ES module syntax (export default class)
-- **Files to touch:**
-  - `tests/e2e/pages/guest/RoomSearchPage.ts`
-  - `tests/e2e/pages/guest/ConfirmationPage.ts`
-  - `tests/e2e/pages/guest/LoginPage.ts`
-  - `tests/e2e/pages/guest/DashboardPage.ts`
-  - `tests/e2e/pages/guest/MyBookingsPage.ts`
-  - `tests/e2e/pages/admin/AdminLoginPage.ts`
-  - `tests/e2e/pages/admin/AdminDashboardPage.ts`
-  - `tests/e2e/pages/admin/BookingOverviewPage.ts`
-  - `tests/e2e/pages/admin/RoomManagementPage.ts`
-
-### Task 6: Update fixtures.ts to import TypeScript page objects
-- Update fixtures.ts to use ES module imports for page objects
-- Ensure all imports use .ts extensions or no extensions (depending on tsconfig)
-- Verify fixture types are properly defined
-- **Files to touch:**
-  - `tests/e2e/fixtures.ts`
+  - (No code changes, verification only)
 
 ---
 

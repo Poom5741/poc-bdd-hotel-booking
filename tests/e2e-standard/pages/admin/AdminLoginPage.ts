@@ -1,4 +1,5 @@
 import type { Page, Locator } from '@playwright/test';
+import { step } from '../../utilities/step-decorator';
 
 export default class AdminLoginPage {
   readonly page: Page;
@@ -17,22 +18,27 @@ export default class AdminLoginPage {
     this.errorText = page.locator('main section .error-message[role="alert"]').first();
   }
 
+  @step("Navigate to admin login page")
   async goto(): Promise<void> {
     await this.page.goto('/admin/login');
   }
 
+  @step("Fill admin email: {email}")
   async fillEmail(email: string): Promise<void> {
     await this.emailInput.fill(email);
   }
 
+  @step("Fill admin password")
   async fillPassword(password: string): Promise<void> {
     await this.passwordInput.fill(password);
   }
 
+  @step("Submit admin login form")
   async submit(): Promise<void> {
     await this.submitButton.click();
   }
 
+  @step("Get error text from admin login page")
   async getErrorText(): Promise<string | null> {
     // Wait for error message to be visible before getting text
     try {

@@ -13,7 +13,7 @@ test.describe('Admin authentication', () => {
   test('Admin login success redirects to admin dashboard', async ({ adminLoginPage, adminDashboardPage, page }) => {
     await adminLoginPage.goto();
     await adminLoginPage.fillEmail('admin@stayflex.test');
-    await adminLoginPage.fillPassword('admin123');
+    await adminLoginPage.fillPassword('admin1231');
     await adminLoginPage.submit();
     
     await expect(page).toHaveURL(/\/admin\/dashboard$/);

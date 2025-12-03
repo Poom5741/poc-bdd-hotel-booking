@@ -1,4 +1,5 @@
 import type { Page, Locator } from '@playwright/test';
+import { step } from '../../utilities/step-decorator';
 
 export default class RoomManagementPage {
   readonly page: Page;
@@ -28,10 +29,12 @@ export default class RoomManagementPage {
     this.errorMessage = page.locator('main .error-message[role="alert"]').first();
   }
 
+  @step("Navigate to room management page")
   async goto(): Promise<void> {
     await this.page.goto('/admin/rooms');
   }
 
+  @step("Create room: {name} with capacity {capacity} and price {price}")
   async createRoom(name: string, capacity: number, price: string): Promise<void> {
     // Form is always visible, no need to click a "create" button
     await this.roomNameInput.fill(name);
@@ -48,6 +51,7 @@ export default class RoomManagementPage {
     await this.saveButton.click();
   }
 
+  @step("Mark room out of order: {roomId}")
   async markOutOfOrder(roomId: string): Promise<void> {
     // Normalize roomId: HTML uses displayId (e.g., "102" not "room-102")
     const normalizedId = roomId.startsWith('room-') ? roomId.replace('room-', '') : roomId;
@@ -56,6 +60,7 @@ export default class RoomManagementPage {
     await button.click();
   }
 
+  @step("Delete room: {roomId}")
   async deleteRoom(roomId: string): Promise<void> {
     // Normalize roomId: HTML uses displayId (e.g., "102" not "room-102")
     const normalizedId = roomId.startsWith('room-') ? roomId.replace('room-', '') : roomId;
@@ -64,6 +69,7 @@ export default class RoomManagementPage {
     await button.click();
   }
 
+  @step("Get error message from room management")
   async getErrorMessage(): Promise<string | null> {
     // Wait for error message to be visible before getting text
     try {
@@ -75,6 +81,7 @@ export default class RoomManagementPage {
     }
   }
 
+  @step("Get room list from management page")
   async getRoomList(): Promise<Locator[]> {
     return await this.roomList.all();
   }

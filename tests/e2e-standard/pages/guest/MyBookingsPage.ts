@@ -1,4 +1,5 @@
 import type { Page, Locator } from '@playwright/test';
+import { step } from '../../utilities/step-decorator';
 
 interface BookingMeta {
   id: string;
@@ -17,18 +18,22 @@ export default class MyBookingsPage {
     this.confirmationMessage = page.locator('.confirmation-message');
   }
 
+  @step("Navigate to my bookings page")
   async goto(): Promise<void> {
     await this.page.goto('/my-bookings');
   }
 
+  @step("Get booking list")
   async getBookingList(): Promise<Locator[]> {
     return await this.bookingList.all();
   }
 
+  @step("Wait for booking list to appear")
   async waitForBookingList(): Promise<void> {
     await this.bookingList.first().waitFor({ state: 'visible' });
   }
 
+  @step("Get bookings metadata")
   async getBookingsMeta(): Promise<BookingMeta[]> {
     return await this.bookingList.evaluateAll((nodes) =>
       nodes.map((node) => {
@@ -53,17 +58,20 @@ export default class MyBookingsPage {
     );
   }
 
+  @step("Find booking ID by check-in date: {checkIn}")
   async findBookingIdByDate(checkIn: string): Promise<string | undefined> {
     const bookings = await this.getBookingsMeta();
     const match = bookings.find((booking) => booking.checkIn?.startsWith(checkIn));
     return match?.id;
   }
 
+  @step("Cancel booking by ID: {id}")
   async cancelBookingById(id: string): Promise<void> {
     const cancelButton = this.page.locator(`.booking-item[data-id="${id}"] .cancel-button`);
     await cancelButton.click();
   }
 
+  @step("Get status by booking ID: {id}")
   async getStatusByBookingId(id: string): Promise<string | null> {
     const statusElement = this.page.locator(`.booking-item[data-id="${id}"] .status`);
     return await statusElement.textContent();
@@ -73,6 +81,7 @@ export default class MyBookingsPage {
     return this.page.locator(`.booking-item[data-id="${id}"]`);
   }
 
+  @step("Get confirmation message from my bookings")
   async getConfirmationMessage(): Promise<string | null> {
     return await this.confirmationMessage.textContent();
   }

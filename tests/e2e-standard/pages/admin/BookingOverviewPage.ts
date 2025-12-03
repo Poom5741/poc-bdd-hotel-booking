@@ -1,4 +1,5 @@
 import type { Page, Locator } from '@playwright/test';
+import { step } from '../../utilities/step-decorator';
 
 interface BookingMeta {
   id: string;
@@ -35,10 +36,12 @@ export default class BookingOverviewPage {
     this.articleList = page.locator('article');
   }
 
+  @step("Navigate to booking overview page")
   async goto(): Promise<void> {
     await this.page.goto('/admin/bookings');
   }
 
+  @step("Wait for booking list to appear")
   async waitForBookingList(): Promise<void> {
     // Wait for either explicit .booking-item or generic article entries
     if (await this.bookingList.count() > 0) {
@@ -48,26 +51,31 @@ export default class BookingOverviewPage {
     }
   }
 
+  @step("Filter bookings from {fromDate} to {toDate}")
   async filterBookings(fromDate: string, toDate: string): Promise<void> {
     await this.filterFromInput.fill(fromDate);
     await this.filterToInput.fill(toDate);
     await this.applyFilterButton.click();
   }
 
+  @step("Mark booking as checked in: {bookingId}")
   async markCheckedIn(bookingId: string): Promise<void> {
     const button = this.page.locator(`.booking-item[data-id="${bookingId}"] .check-in-button`);
     await button.click();
   }
 
+  @step("Mark booking as checked out: {bookingId}")
   async markCheckedOut(bookingId: string): Promise<void> {
     const button = this.page.locator(`.booking-item[data-id="${bookingId}"] .check-out-button`);
     await button.click();
   }
 
+  @step("Get booking list from overview")
   async getBookingList(): Promise<Locator[]> {
     return await this.bookingList.all();
   }
 
+  @step("Get bookings metadata from overview")
   async getBookingsMeta(): Promise<BookingMeta[]> {
     // Prefer .booking-item with data attributes; fallback to parsing article paragraphs
     if (await this.bookingList.count() > 0) {
@@ -122,6 +130,7 @@ export default class BookingOverviewPage {
     );
   }
 
+  @step("Find booking ID by date filter")
   async findBookingIdByDate({ checkIn, checkOut }: BookingDateFilter): Promise<string | undefined> {
     const normalize = (s: string | null | undefined): string => (s || '').replace(/\u2011/g, '-').trim();
     const targetIn = normalize(checkIn);
@@ -135,6 +144,7 @@ export default class BookingOverviewPage {
     return match?.id;
   }
 
+  @step("Get status by booking ID: {id}")
   async getStatusByBookingId(id: string): Promise<string | null> {
     const statusElement = this.page.locator(`.booking-item[data-id="${id}"] .status`);
     return await statusElement.textContent();
